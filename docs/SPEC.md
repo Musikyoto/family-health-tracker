@@ -1,6 +1,6 @@
 # Family Health Tracker — Design Specification
 
-> **Status:** Design complete (viewing, editing, visual language, access model). Build not yet started.
+> **Status:** Design complete (viewing, editing, visual language, access model, empty states / first-run). Build not yet started.
 > **Purpose:** Single source of truth for all locked design decisions. Update this doc whenever a decision changes.
 > **Last updated:** June 2026
 
@@ -199,6 +199,7 @@ Fields:
 - The **first** time someone opens a link: a calm **welcome screen** — "Welcome to your family's health space" + a single **Enter** button.
 - Welcome is **generic (no name)** — a *shared* view link can't identify who's opening it.
 - On **every subsequent visit:** land straight on the **calendar**, no welcome, no friction.
+- NOTE: this is the *link-recipient* welcome (viewers + editors arriving via a link). It is distinct from the **editor first-run setup** in §13a, which is the empty-data onboarding the editor sees when there are no people/items yet.
 
 ### Known limitations (accepted for family-first)
 - **Not real security** — anyone with a link gets that access. Acceptable for family-internal use; chosen knowingly.
@@ -257,24 +258,52 @@ The complete visual identity. Applies app-wide.
 
 ---
 
+## 13a. Empty states & first-run (LOCKED)
+
+Four distinct empty/first-run moments. **Empty states differ by role** — editors get "add" prompts; viewers (no add ability) get softer "nothing here yet" messages.
+
+### 1. Editor — very first launch (no people, no items)
+- A clean **single-step welcome**: heading "Welcome", one line of copy ("Let's set up your family's health space. Start by adding someone you'd like to keep track of."), and ONE primary action: **"Add a person"**.
+- A quiet sub-note: "You can add more people any time."
+- **One step only** — NO multi-step wizard, NO "Step 1 of 2" counter. Tapping opens the add-person sheet; after adding people and continuing, the editor lands in the normal app (which is empty-state #2/#3, themselves prompting the next action).
+- **No emoji** — clean / product-like tone.
+- Shows **only** on first launch with zero data; never returns once a person exists.
+
+### 2. Calendar — people added, no items (editor view)
+- Calendar chrome renders normally (empty month, today's gradient circle visible) so it doesn't feel broken.
+- Centered prompt: icon, "No appointments yet", "Add an appointment, test, or bill and it'll show up here on the day.", and an **"Add item"** button.
+
+### 3. Medication — no meds yet (editor view)
+- Centered prompt: icon, "No medications added", "Add a medication to see it sorted into morning, noon, and evening.", and an **"Add medication"** button.
+
+### 4. Viewer — empty app (view-only family)
+- **No gear, no add buttons** (role-correct).
+- Softer, no-action message: icon, "Nothing scheduled yet", "When appointments or tests are added, they'll appear here. Check back soon."
+- This is the key role distinction: a viewer must NOT see "tap + to add" since they have no + button.
+
+---
+
 ## 14. Screen inventory (design status)
 
 | Screen | Status |
 |---|---|
-| Calendar tab — month grid + tap-day detail | ✅ Designed |
-| Item detail (deep-dive) | ✅ Designed |
-| Medication tab — Morning/Noon/Evening by person | ✅ Designed |
-| People management (list + add/edit) | ✅ Designed |
-| Settings home | ✅ Designed |
-| Invite links panel | ✅ Designed |
-| Add/Edit calendar item form | ✅ Designed |
-| Add/Edit medication form | ✅ Designed |
-| First-time welcome | ✅ Designed |
-| Visual language / theme | ✅ Locked |
-| **Delete action on edit forms** | ⚠️ Specified, not mocked |
-| **Empty states** (no data yet; first-run setup for editor) | ⚠️ Not designed |
-| **Regenerate confirmation dialog** | ⚠️ Specified, not mocked |
-| **Short medication courses** | ❓ Undecided |
+| Calendar tab — month grid + tap-day detail | DONE |
+| Item detail (deep-dive) | DONE |
+| Medication tab — Morning/Noon/Evening by person | DONE |
+| People management (list + add/edit) | DONE |
+| Settings home | DONE |
+| Invite links panel | DONE |
+| Add/Edit calendar item form | DONE |
+| Add/Edit medication form | DONE |
+| First-time (link recipient) welcome | DONE |
+| Editor first-run setup (empty data) | DONE |
+| Calendar empty state | DONE |
+| Medication empty state | DONE |
+| Viewer empty state | DONE |
+| Visual language / theme | LOCKED |
+| Delete action on edit forms | SPECIFIED, not mocked |
+| Regenerate confirmation dialog | SPECIFIED, not mocked |
+| Short medication courses | UNDECIDED |
 
 ---
 
@@ -283,8 +312,9 @@ The complete visual identity. Applies app-wide.
 1. Does the **medication form** field set feel final?
 2. **Short medication courses** (auto-expire) — needed or not?
 3. **Delete** confirmation pattern (forms).
-4. **Empty states** — especially the editor's very first run (no people, no items yet — needs an onboarding nudge to "add your first person").
-5. **Regenerate** confirmation copy/behavior.
+4. **Regenerate** confirmation copy/behavior.
+
+> Note: the editor first-run + all empty states are now designed (§13a) — previously the most significant open gap, now closed.
 
 ---
 
@@ -293,3 +323,4 @@ The complete visual identity. Applies app-wide.
 - Plan in chat → execute in Claude Code, one task at a time, verify before proceeding.
 - Push to GitHub after every meaningful session.
 - Show diffs (with surrounding context) for any code change, not just prose descriptions.
+- **First build decision (not yet made):** tech stack + data layer (framework, where data lives, hosting). The design spec deliberately leaves this open; decide it deliberately at the start of the first build session.
