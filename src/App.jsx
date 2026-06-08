@@ -56,7 +56,8 @@ export default function App() {
   const tabScreen = tab === 'calendar'
     ? <CalendarTab data={data} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
         onOpenItem={(id) => push({ type: 'itemDetail', id })} />
-    : <MedicationTab data={data} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} />;
+    : <MedicationTab data={data} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
+        onOpenMed={(id) => push({ type: 'medForm', editId: id })} />;
 
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>

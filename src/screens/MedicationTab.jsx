@@ -10,11 +10,11 @@ const TIME_SECTIONS = [
   { key: 'Evening', icon: 'moon' },
 ];
 
-function MedRow({ med, person }) {
+function MedRow({ med, person, onClick }) {
   const food = FOOD_LABEL[med.food];
   const note = [food, med.note].filter(Boolean).join(' · ');
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 0' }}>
+    <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 0', cursor: onClick ? 'pointer' : 'default' }}>
       <Avatar person={person} size={38} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -25,11 +25,12 @@ function MedRow({ med, person }) {
           {person.name}{note ? ` · ${note}` : ''}
         </div>
       </div>
+      {onClick && <Icon name="chevron" size={16} color={T.muted} strokeWidth={2} />}
     </div>
   );
 }
 
-export function MedicationTab({ data, role, onTab, onGear, onAdd }) {
+export function MedicationTab({ data, role, onTab, onGear, onAdd, onOpenMed }) {
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
   const noMeds = data.meds.length === 0;
 
@@ -61,7 +62,7 @@ export function MedicationTab({ data, role, onTab, onGear, onAdd }) {
                 <div style={{ background: T.card, borderRadius: 20, padding: '2px 16px', boxShadow: T.shadowCard }}>
                   {meds.map((m, i) => (
                     <div key={m.id} style={{ borderBottom: i < meds.length - 1 ? `1px solid ${T.fieldBorder}` : 'none' }}>
-                      <MedRow med={m} person={peopleById[m.personId]} />
+                      <MedRow med={m} person={peopleById[m.personId]} onClick={role === 'editor' && onOpenMed ? () => onOpenMed(m.id) : undefined} />
                     </div>
                   ))}
                 </div>
