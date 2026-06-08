@@ -1,25 +1,28 @@
 import React from 'react';
 import { seedData } from './lib/data.js';
 import { CalendarTab } from './screens/CalendarTab.jsx';
+import { MedicationTab } from './screens/MedicationTab.jsx';
 
-// Step 2 of the build: render the Calendar tab on its own with seed data,
-// to verify it matches the approved design before we wire up navigation,
-// the other screens, and (later) Supabase.
-//
-// Handlers are stubs for now — they just log. They get real behaviour
-// once the navigation/state machine is reassembled in a later step.
+// Build progress: Calendar + Medication tabs, with working tab switching.
+// Still stubbed (log only): gear (Settings), + (forms), tapping an item.
+// Those come alive once the remaining screens are converted and navigation
+// is reassembled. Data is still in-memory seed data (Supabase comes later).
 
 export default function App() {
   const [data] = React.useState(seedData);
+  const [tab, setTab] = React.useState('calendar');
 
-  return (
-    <CalendarTab
-      data={data}
-      role="editor"
-      onTab={(t) => console.log('switch tab →', t)}
-      onGear={() => console.log('open settings')}
-      onAdd={() => console.log('add item')}
-      onOpenItem={(id) => console.log('open item', id)}
-    />
+  const shared = {
+    data,
+    role: 'editor',
+    onTab: setTab,
+    onGear: () => console.log('open settings'),
+    onAdd: () => console.log('add', tab === 'calendar' ? 'item' : 'medication'),
+  };
+
+  return tab === 'calendar' ? (
+    <CalendarTab {...shared} onOpenItem={(id) => console.log('open item', id)} />
+  ) : (
+    <MedicationTab {...shared} />
   );
 }
