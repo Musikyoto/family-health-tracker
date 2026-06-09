@@ -3,15 +3,22 @@ import { seedData } from './lib/data.js';
 import { CalendarTab, ItemDetail } from './screens/CalendarTab.jsx';
 import { MedicationTab } from './screens/MedicationTab.jsx';
 import { CalendarForm, MedForm } from './screens/Forms.jsx';
+import { SettingsHome, PeopleList, PersonForm, InviteLinks, RegenerateDialog, DeletePersonDialog } from './screens/Settings.jsx';
 
-// Build progress: Calendar + Medication tabs, item detail, and add/edit/delete
-// forms — all interactive. Data is in-memory seed data (Supabase comes later).
-// Still stubbed (log only): the gear (Settings/People/Invite), built next round.
+// Build progress: all main screens + Settings (People, Invite links) live.
+// Data is in-memory seed data (Supabase comes next). Role is fixed 'editor'
+// for now; the welcome/first-run + view-only role come in the final UI round.
+
+const DEFAULT_LINKS = { view: 'famhealth.app/v/8kq2-rd7m', edit: 'famhealth.app/e/x9f4-2bnp' };
+const randLink = (p) => `famhealth.app/${p}/${Math.random().toString(36).slice(2, 6)}-${Math.random().toString(36).slice(2, 6)}`;
 
 export default function App() {
   const [data, setData] = React.useState(seedData);
   const [tab, setTab] = React.useState('calendar');
-  const [stack, setStack] = React.useState([]); // overlay stack of screens
+  const [stack, setStack] = React.useState([]);
+  const [links, setLinks] = React.useState(DEFAULT_LINKS);
+  const [regenKind, setRegenKind] = React.useState(null);
+  const [deletePersonId, setDeletePersonId] = React.useState(null);
 
   const role = 'editor';
   const top = stack[stack.length - 1] || null;
@@ -19,6 +26,7 @@ export default function App() {
   const pop = () => setStack((s) => s.slice(0, -1));
   const closeAll = () => setStack([]);
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
+  const peopleSummary = data.people.length ? data.people.map((p) => p.name).join(', ') : 'No one added yet';
 
   // mutations
   const upsert = (key, rec) => setData((d) => {
@@ -27,9 +35,14 @@ export default function App() {
     return { ...d, [key]: next };
   });
   const remove = (key, id) => setData((d) => ({ ...d, [key]: d[key].filter((x) => x.id !== id) }));
+  const removePerson = (id) => setData((d) => ({
+    people: d.people.filter((p) => p.id !== id),
+    items: d.items.filter((it) => it.personId !== id),
+    meds: d.meds.filter((m) => m.personId !== id),
+  }));
 
   const onAdd = () => push({ type: tab === 'calendar' ? 'calForm' : 'medForm' });
-  const onGear = () => console.log('open settings (built next round)');
+  const onGear = () => push({ type: 'settings' });
 
   // overlay
   let overlay = null;
@@ -50,6 +63,22 @@ export default function App() {
         onCancel={pop}
         onSave={(rec) => { upsert('meds', rec); pop(); }}
         onDelete={() => { remove('meds', top.editId); closeAll(); }} />;
+    } else if (top.type === 'settings') {
+      overlay = <SettingsHome onBack={pop} peopleSummary={peopleSummary}
+        onPeople={() => push({ type: 'people' })}
+        onInvite={() => push({ type: 'invite' })} />;
+    } else if (top.type === 'people') {
+      overlay = <PeopleList people={data.people} onBack={pop}
+        onAdd={() => push({ type: 'personForm' })}
+        onEdit={(id) => push({ type: 'personForm', editId: id })} />;
+    } else if (top.type === 'personForm') {
+      const initial = top.editId ? data.people.find((x) => x.id === top.editId) : null;
+      overlay = <PersonForm people={data.people} initial={initial}
+        onCancel={pop}
+        onSave={(rec) => { upsert('people', rec); pop(); }}
+        onDelete={() => setDeletePersonId(top.editId)} />;
+    } else if (top.type === 'invite') {
+      overlay = <InviteLinks onBack={pop} links={links} onRegen={(k) => setRegenKind(k)} />;
     }
   }
 
@@ -62,8 +91,19 @@ export default function App() {
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>
       {tabScreen}
-      {overlay && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 60 }}>{overlay}</div>
+      {overlay && <div style={{ position: 'absolute', inset: 0, zIndex: 60 }}>{overlay}</div>}
+      {regenKind && (
+        <RegenerateDialog kind={regenKind}
+          onCancel={() => setRegenKind(null)}
+          onConfirm={() => { setLinks((l) => ({ ...l, [regenKind]: randLink(regenKind === 'edit' ? 'e' : 'v') })); setRegenKind(null); }} />
+      )}
+      {deletePersonId && peopleById[deletePersonId] && (
+        <DeletePersonDialog
+          person={peopleById[deletePersonId]}
+          itemCount={data.items.filter((it) => it.personId === deletePersonId).length}
+          medCount={data.meds.filter((m) => m.personId === deletePersonId).length}
+          onCancel={() => setDeletePersonId(null)}
+          onConfirm={() => { removePerson(deletePersonId); setDeletePersonId(null); pop(); }} />
       )}
     </div>
   );
