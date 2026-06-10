@@ -1,43 +1,31 @@
 import React from 'react'
 import { Screen, PrimaryButton, GhostButton, TextInput, Field } from '../components/ui.jsx'
 import { T } from '../lib/theme.js'
-import { sendOtp, verifyOtp, signInWithPassword, signUpWithPassword } from '../lib/auth.js'
+import { sendMagicLink, signInWithPassword, signUpWithPassword } from '../lib/auth.js'
 
 // ── AuthScreen ────────────────────────────────────────────────────────
-// Three sub-steps: email entry → OTP verify (or password entry → sign-up fallback)
-// Email-first: user types email, we send OTP; they can switch to password mode.
+// Email-first magic link. Default Supabase templates are link-based and
+// can't be edited on the built-in email service, so we use the link (not a
+// 6-digit code): user enters email → we send a link → they tap it → the app
+// reopens already authenticated (handled by detectSessionInUrl in AuthGate).
+// Password is offered as a secondary method.
 
 export function AuthScreen() {
   const [email, setEmail] = React.useState('')
-  const [step, setStep] = React.useState('email') // 'email' | 'otp' | 'password' | 'signup'
-  const [code, setCode] = React.useState('')
+  const [step, setStep] = React.useState('email') // 'email' | 'sent' | 'password' | 'signup'
   const [password, setPassword] = React.useState('')
   const [busy, setBusy] = React.useState(false)
   const [err, setErr] = React.useState(null)
 
   const clearErr = () => setErr(null)
 
-  async function handleSendOtp(e) {
+  async function handleSendLink(e) {
     e.preventDefault()
     if (!email.trim()) return
     setBusy(true); clearErr()
     try {
-      await sendOtp(email.trim())
-      setStep('otp')
-    } catch (ex) {
-      setErr(ex.message)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function handleVerifyOtp(e) {
-    e.preventDefault()
-    if (!code.trim()) return
-    setBusy(true); clearErr()
-    try {
-      await verifyOtp(email.trim(), code.trim())
-      // onAuthStateChange in AuthGate will pick up the new session
+      await sendMagicLink(email.trim())
+      setStep('sent')
     } catch (ex) {
       setErr(ex.message)
     } finally {
@@ -69,7 +57,9 @@ export function AuthScreen() {
     setBusy(true); clearErr()
     try {
       await signUpWithPassword(email.trim(), password)
-      // session fires via onAuthStateChange
+      // If email confirmation is on, no session yet → tell them to check email.
+      // If it's off, onAuthStateChange fires and AuthGate swaps to the app.
+      setStep('sent')
     } catch (ex) {
       setErr(ex.message)
     } finally {
@@ -87,7 +77,7 @@ export function AuthScreen() {
           </div>
           <div style={{ fontSize: 16, color: T.body, marginTop: 4 }}>
             {step === 'email' && 'Sign in or create an account'}
-            {step === 'otp' && 'Check your email'}
+            {step === 'sent' && 'Check your email'}
             {step === 'password' && 'Sign in with password'}
             {step === 'signup' && 'Create your account'}
           </div>
@@ -95,7 +85,7 @@ export function AuthScreen() {
 
         {/* ── Email step ── */}
         {step === 'email' && (
-          <form onSubmit={handleSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <form onSubmit={handleSendLink} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Field label="Email address">
               <TextInput
                 type="email"
@@ -105,8 +95,8 @@ export function AuthScreen() {
               />
             </Field>
             {err && <ErrorMsg>{err}</ErrorMsg>}
-            <PrimaryButton onClick={handleSendOtp} style={{ marginTop: 4 }}>
-              {busy ? 'Sending…' : 'Send sign-in code'}
+            <PrimaryButton onClick={handleSendLink} style={{ marginTop: 4 }}>
+              {busy ? 'Sending…' : 'Send sign-in link'}
             </PrimaryButton>
             <div style={{ textAlign: 'center', marginTop: 8 }}>
               <InlineLink onClick={() => { clearErr(); setStep('password') }}>
@@ -116,33 +106,24 @@ export function AuthScreen() {
           </form>
         )}
 
-        {/* ── OTP verify step ── */}
-        {step === 'otp' && (
-          <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ fontSize: 15, color: T.body, lineHeight: 1.5, marginBottom: 4 }}>
-              We sent a 6-digit code to <strong style={{ color: T.deep }}>{email}</strong>. Enter it below.
+        {/* ── Sent (check email) step ── */}
+        {step === 'sent' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontSize: 15, color: T.body, lineHeight: 1.55 }}>
+              We sent a sign-in link to <strong style={{ color: T.deep }}>{email}</strong>.
+              Tap it to finish signing in — you can open it on this device or your phone.
+              You can close this tab once you’ve tapped the link.
             </div>
-            <Field label="Code">
-              <TextInput
-                type="text"
-                value={code}
-                onChange={(v) => { setCode(v.replace(/\D/g, '').slice(0, 6)); clearErr() }}
-                placeholder="123456"
-                style={{ letterSpacing: 4, fontSize: 22, textAlign: 'center' }}
-              />
-            </Field>
             {err && <ErrorMsg>{err}</ErrorMsg>}
-            <PrimaryButton onClick={handleVerifyOtp}>
-              {busy ? 'Verifying…' : 'Confirm code'}
-            </PrimaryButton>
-            <div style={{ textAlign: 'center', marginTop: 8 }}>
+            <GhostButton onClick={handleSendLink}>
+              {busy ? 'Resending…' : 'Resend link'}
+            </GhostButton>
+            <div style={{ textAlign: 'center', marginTop: 4 }}>
               <InlineLink onClick={() => { clearErr(); setStep('email') }}>
-                ← Back
+                ← Use a different email
               </InlineLink>
-              {' · '}
-              <InlineLink onClick={handleSendOtp}>Resend code</InlineLink>
             </div>
-          </form>
+          </div>
         )}
 
         {/* ── Password sign-in step ── */}
@@ -164,7 +145,7 @@ export function AuthScreen() {
               {busy ? 'Signing in…' : 'Sign in'}
             </PrimaryButton>
             <GhostButton onClick={() => { clearErr(); setStep('email') }}>
-              ← Use a code instead
+              ← Use a link instead
             </GhostButton>
           </form>
         )}

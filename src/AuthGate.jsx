@@ -1,18 +1,18 @@
 import React from 'react'
-import { onAuthStateChange, getUser } from './lib/auth.js'
+import { onAuthStateChange } from './lib/auth.js'
 import { AuthScreen } from './screens/AuthScreen.jsx'
 import App from './App.jsx'
 
 // AuthGate subscribes to Supabase auth state.
 // Renders AuthScreen when logged out, App when logged in.
-// getUser() on mount handles the "refresh keeps you logged in" requirement.
+// onAuthStateChange fires INITIAL_SESSION on subscribe — AFTER the client has
+// processed any magic-link hash in the URL (detectSessionInUrl) and restored
+// any stored session — so this single subscription covers first load, refresh
+// (stays logged in), and the magic-link return without flashing the login UI.
 export default function AuthGate() {
   const [user, setUser] = React.useState(undefined) // undefined = loading
 
   React.useEffect(() => {
-    // Populate from existing session on first load
-    getUser().then(setUser)
-    // Subscribe to future changes (sign in, sign out, token refresh)
     return onAuthStateChange(setUser)
   }, [])
 

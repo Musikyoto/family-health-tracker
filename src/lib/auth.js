@@ -1,12 +1,16 @@
 import { supabase } from './supabase.js'
 
-export async function sendOtp(email) {
-  const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
-  if (error) throw error
-}
-
-export async function verifyOtp(email, token) {
-  const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
+// Sends a magic-link email (works for both new and existing users on the
+// default link-based template). The link returns to emailRedirectTo, where
+// detectSessionInUrl (on by default) establishes the session.
+export async function sendMagicLink(email) {
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true,
+      emailRedirectTo: window.location.origin,
+    },
+  })
   if (error) throw error
 }
 
