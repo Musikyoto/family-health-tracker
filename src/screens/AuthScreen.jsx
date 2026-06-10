@@ -1,5 +1,5 @@
 import React from 'react'
-import { Screen, PrimaryButton, GhostButton, TextInput, Field } from '../components/ui.jsx'
+import { Screen, PrimaryButton, GhostButton, TextInput, Field, ErrorMsg, InlineLink } from '../components/ui.jsx'
 import { T } from '../lib/theme.js'
 import { sendMagicLink, signInWithPassword, signUpWithPassword } from '../lib/auth.js'
 
@@ -175,23 +175,5 @@ export function AuthScreen() {
         )}
       </div>
     </Screen>
-  )
-}
-
-function ErrorMsg({ children }) {
-  return (
-    <div style={{
-      background: 'rgba(226,84,47,0.09)', border: '1px solid rgba(226,84,47,0.2)',
-      borderRadius: 12, padding: '10px 14px', fontSize: 14, color: T.red, lineHeight: 1.4,
-    }}>{children}</div>
-  )
-}
-
-function InlineLink({ children, onClick }) {
-  return (
-    <button type="button" onClick={onClick} style={{
-      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-      color: T.accentSolid, fontSize: 15, fontWeight: 600, fontFamily: 'inherit',
-    }}>{children}</button>
   )
 }

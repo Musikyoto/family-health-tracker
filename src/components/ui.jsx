@@ -121,6 +121,25 @@ export function Pill({ label, active, onClick, icon, full }) {
   );
 }
 
+// ── Inline error box + inline text button (shared by auth/onboarding) ──
+export function ErrorMsg({ children }) {
+  return (
+    <div style={{
+      background: 'rgba(226,84,47,0.09)', border: '1px solid rgba(226,84,47,0.2)',
+      borderRadius: 12, padding: '10px 14px', fontSize: 14, color: T.red, lineHeight: 1.4,
+    }}>{children}</div>
+  );
+}
+
+export function InlineLink({ children, onClick }) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+      color: T.accentSolid, fontSize: 15, fontWeight: 600, fontFamily: 'inherit',
+    }}>{children}</button>
+  );
+}
+
 // Single-select person picker (ringed in gradient) — SPEC §9 Form A/B
 export function PersonPicker({ people, value, onChange }) {
   return (

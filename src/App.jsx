@@ -6,13 +6,13 @@ import { CalendarForm, MedForm } from './screens/Forms.jsx';
 import { SettingsHome, PeopleList, PersonForm, InviteLinks, RegenerateDialog, DeletePersonDialog } from './screens/Settings.jsx';
 
 // Build progress: all main screens + Settings (People, Invite links) live.
-// Data is in-memory seed data (Supabase comes next). Role is fixed 'editor'
-// for now; the welcome/first-run + view-only role come in the final UI round.
+// people/items/meds are still in-memory seed data (swapped to Supabase in
+// later steps). family + role now come from the active membership (FamilyGate).
 
 const DEFAULT_LINKS = { view: 'famhealth.app/v/8kq2-rd7m', edit: 'famhealth.app/e/x9f4-2bnp' };
 const randLink = (p) => `famhealth.app/${p}/${Math.random().toString(36).slice(2, 6)}-${Math.random().toString(36).slice(2, 6)}`;
 
-export default function App() {
+export default function App({ role, onSignOut }) {
   const [data, setData] = React.useState(seedData);
   const [tab, setTab] = React.useState('calendar');
   const [stack, setStack] = React.useState([]);
@@ -20,7 +20,6 @@ export default function App() {
   const [regenKind, setRegenKind] = React.useState(null);
   const [deletePersonId, setDeletePersonId] = React.useState(null);
 
-  const role = 'editor';
   const top = stack[stack.length - 1] || null;
   const push = (o) => setStack((s) => [...s, o]);
   const pop = () => setStack((s) => s.slice(0, -1));
@@ -66,7 +65,8 @@ export default function App() {
     } else if (top.type === 'settings') {
       overlay = <SettingsHome onBack={pop} peopleSummary={peopleSummary}
         onPeople={() => push({ type: 'people' })}
-        onInvite={() => push({ type: 'invite' })} />;
+        onInvite={() => push({ type: 'invite' })}
+        onSignOut={onSignOut} />;
     } else if (top.type === 'people') {
       overlay = <PeopleList people={data.people} onBack={pop}
         onAdd={() => push({ type: 'personForm' })}

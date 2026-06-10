@@ -7,7 +7,7 @@ import { Icon } from '../components/Icon.jsx';
 import { Avatar, TopBar, PrimaryButton, GhostButton, Field, TextInput } from '../components/ui.jsx';
 
 // ── Settings home ────────────────────────────────────────────────────
-export function SettingsHome({ onBack, onPeople, onInvite, peopleSummary }) {
+export function SettingsHome({ onBack, onPeople, onInvite, peopleSummary, onSignOut }) {
   const Row = ({ icon, title, sub, onClick, muted, badge }) => (
     <div onClick={onClick} style={{
       display: 'flex', alignItems: 'center', gap: 14, padding: '15px 16px',
@@ -43,6 +43,12 @@ export function SettingsHome({ onBack, onPeople, onInvite, peopleSummary }) {
         <div style={{ textAlign: 'center', color: T.muted, fontSize: 13, fontWeight: 500, padding: '24px 20px 0', lineHeight: 1.5 }}>
           Settings are only visible to editors.
         </div>
+
+        {onSignOut && (
+          <div style={{ padding: '22px 0 0' }}>
+            <GhostButton onClick={onSignOut}>Sign out</GhostButton>
+          </div>
+        )}
       </div>
     </div>
   );
