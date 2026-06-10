@@ -15,7 +15,9 @@ export default function FamilyGate() {
   // Async-only setState (the fetch resolves later), so this is safe to call
   // from an effect without triggering cascading synchronous renders.
   const reload = React.useCallback(() => {
-    getMyMemberships().then(setMemberships).catch(() => setMemberships([]))
+    getMyMemberships()
+      .then(setMemberships)
+      .catch((e) => { console.error('Failed to load memberships:', e); setMemberships([]) })
   }, [])
 
   React.useEffect(() => { reload() }, [reload])
