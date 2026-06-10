@@ -19,7 +19,7 @@ export function CreateJoinScreen({ onDone, onSignOut, initialCode = '', initialM
 
   async function handleCreate(e) {
     e.preventDefault()
-    if (!familyName.trim() || !displayName.trim()) return
+    if (busy || !familyName.trim() || !displayName.trim()) return
     setBusy(true); setErr(null)
     try {
       await createFamily(familyName.trim(), displayName.trim())
@@ -31,7 +31,7 @@ export function CreateJoinScreen({ onDone, onSignOut, initialCode = '', initialM
 
   async function handleJoin(e) {
     e.preventDefault()
-    if (!code.trim() || !displayName.trim()) return
+    if (busy || !code.trim() || !displayName.trim()) return
     setBusy(true); setErr(null)
     try {
       await joinFamily(code.trim(), displayName.trim())
