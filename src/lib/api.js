@@ -154,3 +154,51 @@ export async function deleteItem(id) {
   const { error } = await supabase.from('items').delete().eq('id', id)
   if (error) throw error
 }
+
+// ── Meds ─────────────────────────────────────────────────────────────
+// times is text[] both sides (subset of Morning/Noon/Evening).
+const MED_COLS = 'id, person_id, name, dose, times, food, note'
+const medFromRow = (r) => ({
+  id: r.id, personId: r.person_id, name: r.name, dose: r.dose ?? '',
+  times: r.times ?? [], food: r.food ?? 'none', note: r.note ?? '',
+})
+const medFields = (m) => ({
+  person_id: m.personId, name: m.name, dose: m.dose,
+  times: m.times, food: m.food, note: m.note,
+})
+
+export async function listMeds(familyId) {
+  const { data, error } = await supabase
+    .from('meds')
+    .select(MED_COLS)
+    .eq('family_id', familyId)
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return (data ?? []).map(medFromRow)
+}
+
+export async function createMed(familyId, med) {
+  const { data, error } = await supabase
+    .from('meds')
+    .insert({ family_id: familyId, ...medFields(med) })
+    .select(MED_COLS)
+    .single()
+  if (error) throw error
+  return medFromRow(data)
+}
+
+export async function updateMed(id, med) {
+  const { data, error } = await supabase
+    .from('meds')
+    .update(medFields(med)) // family_id is immutable — not updated
+    .eq('id', id)
+    .select(MED_COLS)
+    .single()
+  if (error) throw error
+  return medFromRow(data)
+}
+
+export async function deleteMed(id) {
+  const { error } = await supabase.from('meds').delete().eq('id', id)
+  if (error) throw error
+}

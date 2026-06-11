@@ -2,7 +2,7 @@
 // Converted from the design export to ES modules.
 import React from 'react';
 import { T, FOOD_LABEL } from '../lib/theme.js';
-import { uid, TODAY_ISO } from '../lib/data.js';
+import { TODAY_ISO } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Field, TextInput, TextArea, Pill, PersonPicker, GhostButton, inputStyle } from '../components/ui.jsx';
 
@@ -137,7 +137,7 @@ export function MedForm({ people, initial, onSave, onCancel, onDelete }) {
 
   const toggleTime = (t) => setTimes((cur) => cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]);
   const canSave = !!personId && name.trim().length > 0 && times.length > 0;
-  const save = () => onSave({ id: initial?.id || uid(), personId, name: name.trim(), dose: dose.trim(), times, food, note: note.trim() });
+  const save = () => onSave({ id: initial?.id, personId, name: name.trim(), dose: dose.trim(), times, food, note: note.trim() });
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 50 }}>

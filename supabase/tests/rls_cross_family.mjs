@@ -184,6 +184,13 @@ async function main() {
       check("A cannot create an item in family A referencing B's person", !!error,
         error ? '' : 'CROSS-FAMILY person_id was ACCEPTED')
     }
+    {
+      const { error } = await A.from('meds')
+        .insert({ family_id: familyA, person_id: personB, name: 'x-family med' })
+        .select()
+      check("A cannot create a med in family A referencing B's person", !!error,
+        error ? '' : 'CROSS-FAMILY person_id was ACCEPTED')
+    }
   } finally {
     // ── cleanup: each user deletes every family it owns (covers leftovers) ──
     try { await A.from('families').delete().eq('created_by', a.userId) } catch { /* best effort */ }
