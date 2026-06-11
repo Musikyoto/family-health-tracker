@@ -1,6 +1,7 @@
 import React from 'react'
 import { getMyMemberships } from './lib/api.js'
 import { signOut } from './lib/auth.js'
+import { readPendingInviteCode } from './lib/invite.js'
 import { CreateJoinScreen } from './screens/CreateJoinScreen.jsx'
 import { LoadingScreen } from './components/LoadingScreen.jsx'
 import App from './App.jsx'
@@ -25,7 +26,7 @@ export default function FamilyGate() {
   if (memberships === undefined) return <LoadingScreen label="Loading your family…" />
 
   if (memberships.length === 0) {
-    return <CreateJoinScreen onDone={reload} onSignOut={signOut} />
+    return <CreateJoinScreen onDone={reload} onSignOut={signOut} initialCode={readPendingInviteCode()} />
   }
 
   const active = memberships[0]

@@ -2,6 +2,7 @@ import React from 'react'
 import { Screen, PrimaryButton, TextInput, Field, Pill, ErrorMsg, InlineLink } from '../components/ui.jsx'
 import { T } from '../lib/theme.js'
 import { createFamily, joinFamily } from '../lib/api.js'
+import { clearPendingInviteCode } from '../lib/invite.js'
 
 // Shown to a logged-in user who has no family membership yet.
 // They either create a new family (become its editor/owner) or join an
@@ -23,6 +24,7 @@ export function CreateJoinScreen({ onDone, onSignOut, initialCode = '', initialM
     setBusy(true); setErr(null)
     try {
       await createFamily(familyName.trim(), displayName.trim())
+      clearPendingInviteCode() // onboarding done; discard any stashed invite
       onDone() // FamilyGate reloads memberships → this screen unmounts
     } catch (ex) {
       setErr(ex.message); setBusy(false)
@@ -35,6 +37,7 @@ export function CreateJoinScreen({ onDone, onSignOut, initialCode = '', initialM
     setBusy(true); setErr(null)
     try {
       await joinFamily(code.trim(), displayName.trim())
+      clearPendingInviteCode()
       onDone()
     } catch (ex) {
       setErr(ex.message); setBusy(false)
