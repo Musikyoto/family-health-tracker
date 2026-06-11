@@ -2,7 +2,6 @@
 // Converted from the design export to ES modules.
 import React from 'react';
 import { T, PALETTE, PALETTE_ORDER } from '../lib/theme.js';
-import { uid } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Avatar, TopBar, PrimaryButton, GhostButton, Field, TextInput } from '../components/ui.jsx';
 
@@ -93,7 +92,7 @@ export function PersonForm({ people, initial, onSave, onCancel, onDelete }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '58px 16px 12px', position: 'sticky', top: 0, zIndex: 20, background: 'linear-gradient(180deg, #E6F2EC 60%, rgba(230,242,236,0) 100%)' }}>
         <button onClick={onCancel} style={{ border: 'none', background: 'transparent', color: T.body, fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: '8px 4px' }}>Cancel</button>
         <span style={{ fontSize: 16, fontWeight: 700, color: T.deep }}>{editing ? 'Edit person' : 'New person'}</span>
-        <button onClick={canSave ? () => onSave({ id: initial?.id || uid(), name: name.trim(), color }) : undefined} style={{ border: 'none', borderRadius: 999, padding: '9px 18px', cursor: canSave ? 'pointer' : 'default', fontFamily: 'inherit', background: canSave ? T.accent : T.fieldBg, color: canSave ? '#fff' : T.muted, fontSize: 15, fontWeight: 700, boxShadow: canSave ? '0 4px 12px rgba(31,169,160,0.30)' : 'none' }}>Save</button>
+        <button onClick={canSave ? () => onSave({ id: initial?.id, name: name.trim(), color }) : undefined} style={{ border: 'none', borderRadius: 999, padding: '9px 18px', cursor: canSave ? 'pointer' : 'default', fontFamily: 'inherit', background: canSave ? T.accent : T.fieldBg, color: canSave ? '#fff' : T.muted, fontSize: 15, fontWeight: 700, boxShadow: canSave ? '0 4px 12px rgba(31,169,160,0.30)' : 'none' }}>Save</button>
       </div>
 
       <div style={{ padding: '8px 16px 0' }}>

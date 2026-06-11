@@ -67,3 +67,41 @@ export async function regenerateInvite(familyId, role) {
   if (error) throw error
   return data // the new code string
 }
+
+// ── People ───────────────────────────────────────────────────────────
+// people columns (id, name, color) already match the UI shape — no mapping.
+export async function listPeople(familyId) {
+  const { data, error } = await supabase
+    .from('people')
+    .select('id, name, color')
+    .eq('family_id', familyId)
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function createPerson(familyId, { name, color }) {
+  const { data, error } = await supabase
+    .from('people')
+    .insert({ family_id: familyId, name, color })
+    .select('id, name, color')
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updatePerson(id, { name, color }) {
+  const { data, error } = await supabase
+    .from('people')
+    .update({ name, color })
+    .eq('id', id)
+    .select('id, name, color')
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deletePerson(id) {
+  const { error } = await supabase.from('people').delete().eq('id', id)
+  if (error) throw error
+}
