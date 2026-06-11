@@ -11,6 +11,16 @@ const isoOf = (y, m, d) => `${y}-${pad2(m + 1)}-${pad2(d)}`;
 const FULL_WD = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+// Make a user-entered reference URL safe to open. Preserve an explicit scheme
+// (https://…, mailto:, tel:), otherwise default to https:// so a bare
+// "example.com" opens as an absolute URL instead of a relative path.
+function normalizeUrl(url) {
+  const u = (url || '').trim();
+  if (!u) return '';
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(u) || /^(mailto|tel):/i.test(u)) return u;
+  return `https://${u}`;
+}
+
 function buildWeeks(year, month) {
   const first = new Date(year, month, 1).getDay();           // 0=Sun
   const dim = new Date(year, month + 1, 0).getDate();
@@ -262,13 +272,18 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
             <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted, letterSpacing: '0.3px', marginBottom: 10 }}>REFERENCES &amp; DOCUMENTS</div>
             {item.refs && item.refs.length ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                {item.refs.map((r, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 13px', borderRadius: 14, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, cursor: 'pointer' }}>
-                    <Icon name={r.kind === 'image' ? 'image' : 'doc'} size={20} color={T.accentSolid} strokeWidth={1.8} />
-                    <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.deep }}>{r.label}</span>
-                    <Icon name="link" size={17} color={T.muted} strokeWidth={1.8} />
-                  </div>
-                ))}
+                {item.refs.map((r, i) => {
+                  const href = normalizeUrl(r.url);
+                  const Tag = href ? 'a' : 'div';
+                  return (
+                    <Tag key={i} {...(href ? { href, target: '_blank', rel: 'noopener noreferrer' } : {})}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 13px', borderRadius: 14, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, cursor: href ? 'pointer' : 'default', textDecoration: 'none', color: 'inherit' }}>
+                      <Icon name={r.kind === 'image' ? 'image' : 'doc'} size={20} color={T.accentSolid} strokeWidth={1.8} />
+                      <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.deep }}>{r.label || href}</span>
+                      {href && <Icon name="link" size={17} color={T.muted} strokeWidth={1.8} />}
+                    </Tag>
+                  );
+                })}
               </div>
             ) : (
               <div style={{ fontSize: 14, color: T.muted, fontWeight: 500, padding: '4px 0' }}>No links added.</div>
