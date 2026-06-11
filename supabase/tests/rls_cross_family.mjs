@@ -72,7 +72,7 @@ async function main() {
   const b = await signIn('B', env.RLS_TEST_B_EMAIL, env.RLS_TEST_B_PASSWORD)
   const A = a.client, B = b.client
 
-  let familyA, familyB, personA, itemA, medA
+  let familyA, familyB, personA, personB, itemA, medA
 
   try {
     // ── setup: each user creates their own family via the real RPC ──
@@ -87,6 +87,8 @@ async function main() {
       .select('id').single().throwOnError())
     ;({ data: { id: medA } } = await A.from('meds')
       .insert({ family_id: familyA, person_id: personA, name: 'Secret A med' }).select('id').single().throwOnError())
+    ;({ data: { id: personB } } = await B.from('people')
+      .insert({ family_id: familyB, name: 'Mum B', color: 'blue' }).select('id').single().throwOnError())
 
     console.log(`\nSetup: family A=${familyA.slice(0, 8)} · family B=${familyB.slice(0, 8)}`)
     console.log(`A's rows — person ${personA.slice(0, 8)} · item ${itemA.slice(0, 8)} · med ${medA.slice(0, 8)}\n`)
@@ -169,6 +171,18 @@ async function main() {
     {
       const { data, error } = await B.from('invites').select('*').eq('family_id', familyA)
       check("B cannot enumerate A's invites", !error && data?.length === 0)
+    }
+
+    // ── referential integrity: an item's person must be in the item's family ──
+    console.log('\nReferential integrity (person_in_family guard):')
+    {
+      // A is an editor of family A, so RLS permits the insert into family A;
+      // the guard must still reject it because personA... belongs to B's family.
+      const { error } = await A.from('items')
+        .insert({ family_id: familyA, person_id: personB, type: 'Appointment', title: 'x-family', date: '2026-06-20' })
+        .select()
+      check("A cannot create an item in family A referencing B's person", !!error,
+        error ? '' : 'CROSS-FAMILY person_id was ACCEPTED')
     }
   } finally {
     // ── cleanup: each user deletes every family it owns (covers leftovers) ──

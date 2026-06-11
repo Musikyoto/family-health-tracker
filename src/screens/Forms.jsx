@@ -53,7 +53,7 @@ export function CalendarForm({ people, initial, onSave, onCancel, onDelete }) {
 
   const canSave = !!personId && title.trim().length > 0;
   const save = () => onSave({
-    id: initial?.id || uid(), personId, type, title: title.trim(), date, time: formatTime(time),
+    id: initial?.id, personId, type, title: title.trim(), date, time: formatTime(time),
     description: description.trim(), refs: refs.filter(r => r.label.trim() || r.url.trim()),
   });
 

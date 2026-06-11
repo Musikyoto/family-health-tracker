@@ -1,6 +1,9 @@
 import React from 'react';
 import { seedData } from './lib/data.js';
-import { listPeople, createPerson, updatePerson, deletePerson } from './lib/api.js';
+import {
+  listPeople, createPerson, updatePerson, deletePerson,
+  listItems, createItem, updateItem, deleteItem,
+} from './lib/api.js';
 import { CalendarTab, ItemDetail } from './screens/CalendarTab.jsx';
 import { MedicationTab } from './screens/MedicationTab.jsx';
 import { CalendarForm, MedForm } from './screens/Forms.jsx';
@@ -8,31 +11,32 @@ import { SettingsHome, PeopleList, PersonForm, DeletePersonDialog } from './scre
 import { InviteScreen } from './screens/InviteScreen.jsx';
 import { LoadingScreen } from './components/LoadingScreen.jsx';
 
-// Build progress: people now come from the Supabase `people` table, scoped to
-// the active family, with refetch-on-change. items/meds are still in-memory
-// placeholders (local only, not persisted) until steps 6–7. family + role come
-// from the active membership (FamilyGate).
+// Build progress: people + calendar items come from Supabase (scoped to the
+// active family, refetch-on-change). meds are still a local placeholder until
+// step 7. family + role come from the active membership (FamilyGate).
 
 export default function App({ family, role, onSignOut }) {
   const [people, setPeople] = React.useState(undefined); // from DB; undefined = loading
-  const [data, setData] = React.useState(() => { const s = seedData(); return { items: s.items, meds: s.meds }; });
+  const [items, setItems] = React.useState(undefined);   // from DB; undefined = loading
+  const [data, setData] = React.useState(() => ({ meds: seedData().meds })); // meds local until step 7
   const [tab, setTab] = React.useState('calendar');
   const [stack, setStack] = React.useState([]);
   const [deletePersonId, setDeletePersonId] = React.useState(null);
 
-  const reloadPeople = React.useCallback(() => {
-    return listPeople(family.id)
-      .then(setPeople)
-      .catch((e) => { console.error('Failed to load people:', e); setPeople([]); });
-  }, [family.id]);
-  React.useEffect(() => { reloadPeople(); }, [reloadPeople]);
+  const reloadPeople = React.useCallback(
+    () => listPeople(family.id).then(setPeople).catch((e) => { console.error('Failed to load people:', e); setPeople([]); }),
+    [family.id]);
+  const reloadItems = React.useCallback(
+    () => listItems(family.id).then(setItems).catch((e) => { console.error('Failed to load items:', e); setItems([]); }),
+    [family.id]);
+  React.useEffect(() => { reloadPeople(); reloadItems(); }, [reloadPeople, reloadItems]);
 
   const top = stack[stack.length - 1] || null;
   const push = (o) => setStack((s) => [...s, o]);
   const pop = () => setStack((s) => s.slice(0, -1));
   const closeAll = () => setStack([]);
 
-  // items/meds mutations — still local placeholders until steps 6–7
+  // meds mutations — still a local placeholder until step 7
   const upsert = (key, rec) => setData((d) => {
     const arr = d[key]; const i = arr.findIndex((x) => x.id === rec.id);
     const next = i >= 0 ? arr.map((x) => (x.id === rec.id ? rec : x)) : [...arr, rec];
@@ -40,28 +44,39 @@ export default function App({ family, role, onSignOut }) {
   });
   const remove = (key, id) => setData((d) => ({ ...d, [key]: d[key].filter((x) => x.id !== id) }));
 
-  // people mutations — Supabase write, then refetch so the UI reflects the DB
+  // people mutations — Supabase write, then refetch
   const savePerson = async (rec) => {
     if (rec.id) await updatePerson(rec.id, { name: rec.name, color: rec.color });
     else await createPerson(family.id, { name: rec.name, color: rec.color });
     await reloadPeople();
   };
   const removePersonById = async (id) => {
-    await deletePerson(id); // DB cascade removes this person's items/meds rows
-    await reloadPeople();
+    await deletePerson(id); // DB cascade removes this person's items (+ meds) rows
+    await Promise.all([reloadPeople(), reloadItems()]);
   };
 
-  if (people === undefined) return <LoadingScreen label="Loading…" />;
+  // item mutations — Supabase write, then refetch
+  const saveItem = async (rec) => {
+    if (rec.id) await updateItem(rec.id, rec);
+    else await createItem(family.id, rec);
+    await reloadItems();
+  };
+  const removeItemById = async (id) => {
+    await deleteItem(id);
+    await reloadItems();
+  };
+
+  if (people === undefined || items === undefined) return <LoadingScreen label="Loading…" />;
 
   const peopleById = Object.fromEntries(people.map((p) => [p.id, p]));
   const peopleSummary = people.length ? people.map((p) => p.name).join(', ') : 'No one added yet';
 
-  // Only show items/meds whose person still exists. The seed placeholders point
-  // at people not in this family, so they fall away here; once items/meds are
-  // real this also guards the brief gap between a person delete and the refetch.
+  // Show items/meds only for people who still exist. meds placeholders point at
+  // people not in this family, so they fall away here; for items (real) this
+  // guards the brief gap between a person delete and the refetch.
   const visibleData = {
     people,
-    items: data.items.filter((it) => peopleById[it.personId]),
+    items: items.filter((it) => peopleById[it.personId]),
     meds: data.meds.filter((m) => peopleById[m.personId]),
   };
 
@@ -72,15 +87,15 @@ export default function App({ family, role, onSignOut }) {
   let overlay = null;
   if (top) {
     if (top.type === 'itemDetail') {
-      const item = data.items.find((x) => x.id === top.id);
+      const item = items.find((x) => x.id === top.id);
       if (item && peopleById[item.personId]) overlay = <ItemDetail item={item} person={peopleById[item.personId]} role={role}
         onBack={pop} onEdit={() => push({ type: 'calForm', editId: item.id })} />;
     } else if (top.type === 'calForm') {
-      const initial = top.editId ? data.items.find((x) => x.id === top.editId) : null;
+      const initial = top.editId ? items.find((x) => x.id === top.editId) : null;
       overlay = <CalendarForm people={people} initial={initial}
         onCancel={pop}
-        onSave={(rec) => { upsert('items', rec); pop(); }}
-        onDelete={() => { remove('items', top.editId); closeAll(); }} />;
+        onSave={async (rec) => { try { await saveItem(rec); pop(); } catch (e) { console.error('Save item failed:', e); } }}
+        onDelete={async () => { try { await removeItemById(top.editId); closeAll(); } catch (e) { console.error('Delete item failed:', e); } }} />;
     } else if (top.type === 'medForm') {
       const initial = top.editId ? data.meds.find((x) => x.id === top.editId) : null;
       overlay = <MedForm people={people} initial={initial}
@@ -120,7 +135,7 @@ export default function App({ family, role, onSignOut }) {
       {deletePersonId && peopleById[deletePersonId] && (
         <DeletePersonDialog
           person={peopleById[deletePersonId]}
-          itemCount={data.items.filter((it) => it.personId === deletePersonId).length}
+          itemCount={items.filter((it) => it.personId === deletePersonId).length}
           medCount={data.meds.filter((m) => m.personId === deletePersonId).length}
           onCancel={() => setDeletePersonId(null)}
           onConfirm={async () => { try { await removePersonById(deletePersonId); setDeletePersonId(null); pop(); } catch (e) { console.error('Delete person failed:', e); } }} />

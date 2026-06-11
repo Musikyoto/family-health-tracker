@@ -105,3 +105,52 @@ export async function deletePerson(id) {
   const { error } = await supabase.from('people').delete().eq('id', id)
   if (error) throw error
 }
+
+// ── Items (calendar) ─────────────────────────────────────────────────
+// Map snake_case row ↔ the camelCase shape the UI uses. refs is jsonb both
+// sides (array of { label, url, kind }).
+const ITEM_COLS = 'id, person_id, type, title, date, time, description, refs'
+const itemFromRow = (r) => ({
+  id: r.id, personId: r.person_id, type: r.type, title: r.title,
+  date: r.date, time: r.time ?? '', description: r.description ?? '', refs: r.refs ?? [],
+})
+const itemFields = (it) => ({
+  person_id: it.personId, type: it.type, title: it.title,
+  date: it.date, time: it.time, description: it.description, refs: it.refs,
+})
+
+export async function listItems(familyId) {
+  const { data, error } = await supabase
+    .from('items')
+    .select(ITEM_COLS)
+    .eq('family_id', familyId)
+    .order('date', { ascending: true })
+  if (error) throw error
+  return (data ?? []).map(itemFromRow)
+}
+
+export async function createItem(familyId, item) {
+  const { data, error } = await supabase
+    .from('items')
+    .insert({ family_id: familyId, ...itemFields(item) })
+    .select(ITEM_COLS)
+    .single()
+  if (error) throw error
+  return itemFromRow(data)
+}
+
+export async function updateItem(id, item) {
+  const { data, error } = await supabase
+    .from('items')
+    .update(itemFields(item)) // family_id is immutable — not updated
+    .eq('id', id)
+    .select(ITEM_COLS)
+    .single()
+  if (error) throw error
+  return itemFromRow(data)
+}
+
+export async function deleteItem(id) {
+  const { error } = await supabase.from('items').delete().eq('id', id)
+  if (error) throw error
+}
