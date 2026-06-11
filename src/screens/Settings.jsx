@@ -137,7 +137,7 @@ export function PersonForm({ people, initial, onSave, onCancel, onDelete }) {
 }
 
 // ── Invite links ─────────────────────────────────────────────────────
-function LinkCard({ kind, url, onCopy, onRegen, copied }) {
+export function LinkCard({ kind, code, url, onCopy, onRegen, copied }) {
   const isEdit = kind === 'edit';
   return (
     <div style={{ background: T.card, borderRadius: 22, padding: 18, boxShadow: T.shadowCard, marginBottom: 16 }}>
@@ -148,9 +148,15 @@ function LinkCard({ kind, url, onCopy, onRegen, copied }) {
       <div style={{ fontSize: 13.5, color: T.body, fontWeight: 500, lineHeight: 1.45, marginBottom: 14 }}>
         {isEdit ? 'Full access — view, add, edit, delete. Share only with people who manage records.' : 'Read-only. Hand out freely to family who just need to see what\'s scheduled.'}
       </div>
+      {code && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: T.selFill, borderRadius: 13, padding: '11px 14px', marginBottom: 12 }}>
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: T.body, letterSpacing: '0.4px' }}>CODE</span>
+          <span style={{ fontSize: 19, fontWeight: 800, color: T.deep, fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '1.5px' }}>{code}</span>
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, borderRadius: 13, padding: '11px 13px', marginBottom: 12 }}>
         <Icon name="link" size={17} color={T.muted} strokeWidth={1.8} />
-        <span style={{ flex: 1, fontSize: 13.5, color: T.body, fontWeight: 600, fontFamily: 'ui-monospace, Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</span>
+        <span style={{ flex: 1, fontSize: 13.5, color: T.body, fontWeight: 600, fontFamily: 'ui-monospace, Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url || 'No active link yet'}</span>
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
         <button onClick={onCopy} style={{ flex: 1, height: 46, borderRadius: 13, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: T.accent, color: '#fff', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, boxShadow: '0 4px 12px rgba(31,169,160,0.28)' }}>
@@ -159,27 +165,6 @@ function LinkCard({ kind, url, onCopy, onRegen, copied }) {
         <button onClick={onRegen} style={{ flex: 1, height: 46, borderRadius: 13, cursor: 'pointer', fontFamily: 'inherit', background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, color: T.body, fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
           <Icon name="refresh" size={16} color={T.body} strokeWidth={1.9} /> Regenerate
         </button>
-      </div>
-    </div>
-  );
-}
-
-export function InviteLinks({ onBack, links, onRegen }) {
-  const [copied, setCopied] = React.useState(null);
-  const copy = (kind, url) => {
-    try { navigator.clipboard && navigator.clipboard.writeText(url); } catch (e) { /* ignore */ }
-    setCopied(kind); setTimeout(() => setCopied(null), 1600);
-  };
-  return (
-    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 40 }}>
-      <TopBar title="Invite links" onBack={onBack} />
-      <div style={{ padding: '6px 16px 0' }}>
-        <LinkCard kind="view" url={links.view} copied={copied === 'view'} onCopy={() => copy('view', links.view)} onRegen={() => onRegen('view')} />
-        <LinkCard kind="edit" url={links.edit} copied={copied === 'edit'} onCopy={() => copy('edit', links.edit)} onRegen={() => onRegen('edit')} />
-        <div style={{ display: 'flex', gap: 10, padding: '4px 6px', color: T.body }}>
-          <Icon name="alert" size={18} color={T.muted} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
-          <span style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>Regenerating a link signs everyone out of it. You'll need to re-send the new link.</span>
-        </div>
       </div>
     </div>
   );

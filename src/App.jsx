@@ -3,21 +3,18 @@ import { seedData } from './lib/data.js';
 import { CalendarTab, ItemDetail } from './screens/CalendarTab.jsx';
 import { MedicationTab } from './screens/MedicationTab.jsx';
 import { CalendarForm, MedForm } from './screens/Forms.jsx';
-import { SettingsHome, PeopleList, PersonForm, InviteLinks, RegenerateDialog, DeletePersonDialog } from './screens/Settings.jsx';
+import { SettingsHome, PeopleList, PersonForm, DeletePersonDialog } from './screens/Settings.jsx';
+import { InviteScreen } from './screens/InviteScreen.jsx';
 
 // Build progress: all main screens + Settings (People, Invite links) live.
 // people/items/meds are still in-memory seed data (swapped to Supabase in
-// later steps). family + role now come from the active membership (FamilyGate).
+// later steps). family + role now come from the active membership (FamilyGate);
+// invites are backed by the invites table via InviteScreen.
 
-const DEFAULT_LINKS = { view: 'famhealth.app/v/8kq2-rd7m', edit: 'famhealth.app/e/x9f4-2bnp' };
-const randLink = (p) => `famhealth.app/${p}/${Math.random().toString(36).slice(2, 6)}-${Math.random().toString(36).slice(2, 6)}`;
-
-export default function App({ role, onSignOut }) {
+export default function App({ family, role, onSignOut }) {
   const [data, setData] = React.useState(seedData);
   const [tab, setTab] = React.useState('calendar');
   const [stack, setStack] = React.useState([]);
-  const [links, setLinks] = React.useState(DEFAULT_LINKS);
-  const [regenKind, setRegenKind] = React.useState(null);
   const [deletePersonId, setDeletePersonId] = React.useState(null);
 
   const top = stack[stack.length - 1] || null;
@@ -78,7 +75,7 @@ export default function App({ role, onSignOut }) {
         onSave={(rec) => { upsert('people', rec); pop(); }}
         onDelete={() => setDeletePersonId(top.editId)} />;
     } else if (top.type === 'invite') {
-      overlay = <InviteLinks onBack={pop} links={links} onRegen={(k) => setRegenKind(k)} />;
+      overlay = <InviteScreen familyId={family.id} onBack={pop} />;
     }
   }
 
@@ -92,11 +89,6 @@ export default function App({ role, onSignOut }) {
     <div style={{ position: 'relative', minHeight: '100%' }}>
       {tabScreen}
       {overlay && <div style={{ position: 'absolute', inset: 0, zIndex: 60 }}>{overlay}</div>}
-      {regenKind && (
-        <RegenerateDialog kind={regenKind}
-          onCancel={() => setRegenKind(null)}
-          onConfirm={() => { setLinks((l) => ({ ...l, [regenKind]: randLink(regenKind === 'edit' ? 'e' : 'v') })); setRegenKind(null); }} />
-      )}
       {deletePersonId && peopleById[deletePersonId] && (
         <DeletePersonDialog
           person={peopleById[deletePersonId]}

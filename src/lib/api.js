@@ -41,3 +41,29 @@ export async function joinFamily(code, displayName) {
   if (error) throw error
   return { familyId: data.family_id, role: data.role }
 }
+
+// ── Invites ──────────────────────────────────────────────────────────
+// The active (non-revoked) invites for a family, grouped by role.
+// One active invite per role is expected → returns { editor?, viewer? }.
+export async function listInvites(familyId) {
+  const { data, error } = await supabase
+    .from('invites')
+    .select('id, code, role, created_at')
+    .eq('family_id', familyId)
+    .eq('revoked', false)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  const byRole = {}
+  for (const inv of data ?? []) if (!byRole[inv.role]) byRole[inv.role] = inv
+  return byRole
+}
+
+// Revoke the active invite of this role and mint a fresh one (server-side RPC).
+export async function regenerateInvite(familyId, role) {
+  const { data, error } = await supabase.rpc('regenerate_invite', {
+    p_family_id: familyId,
+    p_role: role,
+  })
+  if (error) throw error
+  return data // the new code string
+}
