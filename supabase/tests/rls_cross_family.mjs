@@ -139,6 +139,23 @@ async function main() {
         error ? '' : `INSERTED row ${data?.[0]?.id?.slice(0, 8)}`)
     }
 
+    // ── access-control write paths: the invariants the whole model rests on ──
+    console.log('\nAccess-control write paths (B against A — the linchpins):')
+    // Self-insert a membership into A's family. memberships has NO insert policy,
+    // so RLS must default-deny. If this ever succeeds, B joins A as editor.
+    {
+      const { data, error } = await B.from('memberships')
+        .insert({ family_id: familyA, user_id: b.userId, role: 'editor', display_name: 'B' }).select()
+      check("B cannot self-insert a membership into A's family", !!error,
+        error ? '' : 'SELF-JOINED AS EDITOR — TOTAL BREACH')
+    }
+    // Regenerate A's invites via the RPC — gated on is_editor(p_family_id).
+    {
+      const { error } = await B.rpc('regenerate_invite', { p_family_id: familyA, p_role: 'editor' })
+      check("B cannot regenerate A's invites via RPC", !!error,
+        error ? '' : 'MINTED an invite into A')
+    }
+
     // ── bonus: family / membership / invite metadata isolation ──
     console.log('\nBonus — metadata isolation (B against A):')
     {
