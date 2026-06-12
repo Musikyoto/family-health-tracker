@@ -30,7 +30,7 @@ function MedRow({ med, person, onClick }) {
   );
 }
 
-export function MedicationTab({ data, role, onTab, onGear, onAdd, onOpenMed, onSignOut }) {
+export function MedicationTab({ data, role, onTab, onGear, onAdd, onAddPerson, onOpenMed, onSignOut }) {
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
   const noMeds = data.meds.length === 0;
 
@@ -40,9 +40,15 @@ export function MedicationTab({ data, role, onTab, onGear, onAdd, onOpenMed, onS
 
       {noMeds ? (
         role === 'editor' ? (
-          <EmptyBlock icon="pill" title="No medications added"
-            body="Add a medication to see it sorted into morning, noon, and evening."
-            action={<PrimaryButton icon="plus" onClick={onAdd}>Add medication</PrimaryButton>} />
+          data.people.length === 0 ? (
+            <EmptyBlock icon="users" title="Add your first person"
+              body="Start with the people you're tracking — then you can add their medications."
+              action={<PrimaryButton icon="plus" onClick={onAddPerson}>Add a person</PrimaryButton>} />
+          ) : (
+            <EmptyBlock icon="pill" title="No medications added"
+              body="Add a medication to see it sorted into morning, noon, and evening."
+              action={<PrimaryButton icon="plus" onClick={onAdd}>Add medication</PrimaryButton>} />
+          )
         ) : (
           <EmptyBlock icon="pill" title="Nothing here yet"
             body="When medications are added, they'll appear here, sorted by time of day." />

@@ -122,10 +122,11 @@ export default function App({ family, role, onSignOut }) {
     }
   }
 
+  const onAddPerson = () => push({ type: 'personForm' });
   const tabScreen = tab === 'calendar'
-    ? <CalendarTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
+    ? <CalendarTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
         onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />
-    : <MedicationTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
+    : <MedicationTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
         onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={requestSignOut} />;
 
   return (

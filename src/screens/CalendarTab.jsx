@@ -118,7 +118,7 @@ function ItemRow({ item, person, onClick }) {
   );
 }
 
-export function CalendarTab({ data, role, onTab, onGear, onAdd, onOpenItem, onSignOut }) {
+export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onOpenItem, onSignOut }) {
   const [vy, setVy] = React.useState(2026);
   const [vm, setVm] = React.useState(5); // June
   const [selected, setSelected] = React.useState(TODAY);
@@ -198,9 +198,15 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onOpenItem, onSi
       {/* Below the grid */}
       {noItems ? (
         role === 'editor' ? (
-          <EmptyBlock icon="inbox" title="No appointments yet"
-            body="Add an appointment, test, or bill and it'll show up here on the day."
-            action={<PrimaryButton icon="plus" onClick={onAdd}>Add item</PrimaryButton>} />
+          data.people.length === 0 ? (
+            <EmptyBlock icon="users" title="Add your first person"
+              body="Start with the people you're tracking — then you can add their appointments, tests, and bills."
+              action={<PrimaryButton icon="plus" onClick={onAddPerson}>Add a person</PrimaryButton>} />
+          ) : (
+            <EmptyBlock icon="inbox" title="No appointments yet"
+              body="Add an appointment, test, or bill and it'll show up here on the day."
+              action={<PrimaryButton icon="plus" onClick={onAdd}>Add item</PrimaryButton>} />
+          )
         ) : (
           <EmptyBlock icon="inbox" title="Nothing scheduled yet"
             body="When appointments or tests are added, they'll appear here. Check back soon." />
