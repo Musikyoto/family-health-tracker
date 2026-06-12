@@ -193,6 +193,23 @@ export function DeletePersonDialog({ person, itemCount, medCount, onCancel, onCo
     </div>
   );
 }
+export function SignOutDialog({ onCancel, onConfirm }) {
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(31,74,64,0.32)', backdropFilter: 'blur(2px)' }}>
+      <div style={{ width: '100%', background: '#fff', borderRadius: '26px 26px 0 0', padding: '26px 22px 30px', boxShadow: '0 -10px 40px rgba(0,0,0,0.2)' }}>
+        <div style={{ width: 46, height: 46, borderRadius: '50%', background: T.accentTint, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <Icon name="logout" size={22} color={T.accentSolid} strokeWidth={2} />
+        </div>
+        <div style={{ fontSize: 20, fontWeight: 700, color: T.deep, marginBottom: 8 }}>Sign out?</div>
+        <div style={{ fontSize: 15, color: T.body, fontWeight: 500, lineHeight: 1.5, marginBottom: 22 }}>
+          You'll need to sign in again with your email link or password to get back in.
+        </div>
+        <button onClick={onConfirm} style={{ width: '100%', height: 52, borderRadius: 16, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: T.accent, color: '#fff', fontSize: 17, fontWeight: 700, marginBottom: 10 }}>Sign out</button>
+        <button onClick={onCancel} style={{ width: '100%', height: 50, borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit', background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, color: T.body, fontSize: 16, fontWeight: 700 }}>Cancel</button>
+      </div>
+    </div>
+  );
+}
 export function RegenerateDialog({ kind, onCancel, onConfirm }) {
   const isEdit = kind === 'edit';
   return (

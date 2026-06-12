@@ -7,7 +7,7 @@ import {
 import { CalendarTab, ItemDetail } from './screens/CalendarTab.jsx';
 import { MedicationTab } from './screens/MedicationTab.jsx';
 import { CalendarForm, MedForm } from './screens/Forms.jsx';
-import { SettingsHome, PeopleList, PersonForm, DeletePersonDialog } from './screens/Settings.jsx';
+import { SettingsHome, PeopleList, PersonForm, DeletePersonDialog, SignOutDialog } from './screens/Settings.jsx';
 import { InviteScreen } from './screens/InviteScreen.jsx';
 import { LoadingScreen } from './components/LoadingScreen.jsx';
 
@@ -21,6 +21,8 @@ export default function App({ family, role, onSignOut }) {
   const [tab, setTab] = React.useState('calendar');
   const [stack, setStack] = React.useState([]);
   const [deletePersonId, setDeletePersonId] = React.useState(null);
+  const [confirmSignOut, setConfirmSignOut] = React.useState(false);
+  const requestSignOut = () => setConfirmSignOut(true);
 
   const reloadPeople = React.useCallback(
     () => listPeople(family.id).then(setPeople).catch((e) => { console.error('Failed to load people:', e); setPeople([]); }),
@@ -104,7 +106,7 @@ export default function App({ family, role, onSignOut }) {
       overlay = <SettingsHome onBack={pop} peopleSummary={peopleSummary}
         onPeople={() => push({ type: 'people' })}
         onInvite={() => push({ type: 'invite' })}
-        onSignOut={onSignOut} />;
+        onSignOut={requestSignOut} />;
     } else if (top.type === 'people') {
       overlay = <PeopleList people={people} onBack={pop}
         onAdd={() => push({ type: 'personForm' })}
@@ -122,9 +124,9 @@ export default function App({ family, role, onSignOut }) {
 
   const tabScreen = tab === 'calendar'
     ? <CalendarTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
-        onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={onSignOut} />
+        onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />
     : <MedicationTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
-        onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={onSignOut} />;
+        onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={requestSignOut} />;
 
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>
@@ -137,6 +139,11 @@ export default function App({ family, role, onSignOut }) {
           medCount={meds.filter((m) => m.personId === deletePersonId).length}
           onCancel={() => setDeletePersonId(null)}
           onConfirm={async () => { try { await removePersonById(deletePersonId); setDeletePersonId(null); pop(); } catch (e) { console.error('Delete person failed:', e); } }} />
+      )}
+      {confirmSignOut && (
+        <SignOutDialog
+          onCancel={() => setConfirmSignOut(false)}
+          onConfirm={() => { setConfirmSignOut(false); onSignOut(); }} />
       )}
     </div>
   );
