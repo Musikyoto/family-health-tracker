@@ -35,8 +35,13 @@ function buildWeeks(year, month) {
   return weeks;
 }
 
-// Shared header: tabs + gear (gear editor-only)
-export function TabHeader({ active, onTab, role, onGear }) {
+// Shared header: tabs + a top-right slot — gear (→ Settings) for editors,
+// sign-out for viewers (who can't reach Settings).
+const slotBtnStyle = {
+  width: 44, height: 44, borderRadius: '50%', border: 'none', cursor: 'pointer', background: '#fff',
+  boxShadow: '0 2px 10px rgba(31,74,64,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0,
+};
+export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
   const tab = (label) => {
     const on = active === label;
     return (
@@ -54,12 +59,13 @@ export function TabHeader({ active, onTab, role, onGear }) {
       <div style={{ flex: 1, display: 'flex', gap: 4, padding: 4, background: '#fff', borderRadius: 15, boxShadow: T.shadowSoft }}>
         {tab('Calendar')}{tab('Medication')}
       </div>
-      {role === 'editor' && (
-        <button onClick={onGear} aria-label="Settings" style={{
-          width: 44, height: 44, borderRadius: '50%', border: 'none', cursor: 'pointer', background: '#fff',
-          boxShadow: T.shadowSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0,
-        }}>
+      {role === 'editor' ? (
+        <button onClick={onGear} aria-label="Settings" style={slotBtnStyle}>
           <Icon name="gear" size={22} color={T.body} />
+        </button>
+      ) : (
+        <button onClick={onSignOut} aria-label="Sign out" style={slotBtnStyle}>
+          <Icon name="logout" size={21} color={T.body} strokeWidth={2} />
         </button>
       )}
     </div>
@@ -112,7 +118,7 @@ function ItemRow({ item, person, onClick }) {
   );
 }
 
-export function CalendarTab({ data, role, onTab, onGear, onAdd, onOpenItem }) {
+export function CalendarTab({ data, role, onTab, onGear, onAdd, onOpenItem, onSignOut }) {
   const [vy, setVy] = React.useState(2026);
   const [vm, setVm] = React.useState(5); // June
   const [selected, setSelected] = React.useState(TODAY);
@@ -135,7 +141,7 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onOpenItem }) {
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 120 }}>
-      <TabHeader active="Calendar" onTab={onTab} role={role} onGear={onGear} />
+      <TabHeader active="Calendar" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} />
 
       {/* Calendar card */}
       <div style={{ background: T.card, borderRadius: 26, margin: '0 16px', padding: '20px 16px 18px', boxShadow: T.shadowCard }}>

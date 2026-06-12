@@ -122,9 +122,9 @@ export default function App({ family, role, onSignOut }) {
 
   const tabScreen = tab === 'calendar'
     ? <CalendarTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
-        onOpenItem={(id) => push({ type: 'itemDetail', id })} />
+        onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={onSignOut} />
     : <MedicationTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
-        onOpenMed={(id) => push({ type: 'medForm', editId: id })} />;
+        onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={onSignOut} />;
 
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>

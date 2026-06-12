@@ -31,6 +31,7 @@ export function Icon({ name, size = 22, color = 'currentColor', strokeWidth = 1.
     heart: <path d="M12 20s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.4-7 10-7 10z" />,
     inbox: <><path d="M3.5 13h4l1.5 2.5h6L16.5 13h4" /><path d="M5 13 7 5.5h10L19 13v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 17.5z" /></>,
     alert: <><path d="M12 4 2.5 20h19z" /><path d="M12 10v4M12 17.4v.1" /></>,
+    logout: <><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" /><path d="M10 17l5-5-5-5M15 12H3" /></>,
   };
   return <svg {...common}>{paths[name] || null}</svg>;
 }

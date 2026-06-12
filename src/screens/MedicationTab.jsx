@@ -30,13 +30,13 @@ function MedRow({ med, person, onClick }) {
   );
 }
 
-export function MedicationTab({ data, role, onTab, onGear, onAdd, onOpenMed }) {
+export function MedicationTab({ data, role, onTab, onGear, onAdd, onOpenMed, onSignOut }) {
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
   const noMeds = data.meds.length === 0;
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 120 }}>
-      <TabHeader active="Medication" onTab={onTab} role={role} onGear={onGear} />
+      <TabHeader active="Medication" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} />
 
       {noMeds ? (
         role === 'editor' ? (
