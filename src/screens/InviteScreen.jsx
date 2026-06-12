@@ -73,7 +73,7 @@ export function InviteScreen({ familyId, onBack }) {
         <div style={{ display: 'flex', gap: 10, padding: '4px 6px', color: T.body }}>
           <Icon name="alert" size={18} color={T.muted} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
           <span style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>
-            Regenerating a link signs everyone out of it. You'll need to re-send the new link.
+            Regenerating makes the old code and link stop working for anyone who hasn't joined yet. People who've already joined keep their access.
           </span>
         </div>
       </div>

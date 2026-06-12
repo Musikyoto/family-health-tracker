@@ -220,7 +220,7 @@ export function RegenerateDialog({ kind, onCancel, onConfirm }) {
         </div>
         <div style={{ fontSize: 20, fontWeight: 700, color: T.deep, marginBottom: 8 }}>Regenerate {isEdit ? 'edit' : 'view-only'} link?</div>
         <div style={{ fontSize: 15, color: T.body, fontWeight: 500, lineHeight: 1.5, marginBottom: 22 }}>
-          This immediately invalidates the current {isEdit ? 'edit' : 'view-only'} link for <b style={{ color: T.deep }}>everyone</b> using it. They'll lose access until you send them the new link.
+          The current {isEdit ? 'edit' : 'view-only'} code and link will <b style={{ color: T.deep }}>stop working</b> for anyone who hasn't joined yet. People who've already joined keep their access.
         </div>
         <button onClick={onConfirm} style={{ width: '100%', height: 52, borderRadius: 16, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: T.red, color: '#fff', fontSize: 17, fontWeight: 700, marginBottom: 10 }}>Regenerate link</button>
         <button onClick={onCancel} style={{ width: '100%', height: 50, borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit', background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, color: T.body, fontSize: 16, fontWeight: 700 }}>Cancel</button>
