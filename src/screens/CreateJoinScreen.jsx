@@ -18,6 +18,9 @@ export function CreateJoinScreen({ onDone, onSignOut, initialCode = '', initialM
 
   const switchMode = (m) => { setMode(m); setErr(null) }
 
+  const canCreate = familyName.trim().length > 0 && displayName.trim().length > 0
+  const canJoin = code.trim().length > 0 && displayName.trim().length > 0
+
   async function handleCreate(e) {
     e.preventDefault()
     if (busy || !familyName.trim() || !displayName.trim()) return
@@ -71,7 +74,7 @@ export function CreateJoinScreen({ onDone, onSignOut, initialCode = '', initialM
               <TextInput value={displayName} onChange={(v) => { setDisplayName(v); setErr(null) }} placeholder="Your name" />
             </Field>
             {err && <ErrorMsg>{err}</ErrorMsg>}
-            <PrimaryButton onClick={handleCreate} style={{ marginTop: 8 }}>
+            <PrimaryButton onClick={handleCreate} disabled={!canCreate} style={{ marginTop: 8 }}>
               {busy ? 'Creating…' : 'Create family'}
             </PrimaryButton>
           </form>
@@ -91,7 +94,7 @@ export function CreateJoinScreen({ onDone, onSignOut, initialCode = '', initialM
               <TextInput value={displayName} onChange={(v) => { setDisplayName(v); setErr(null) }} placeholder="Your name" />
             </Field>
             {err && <ErrorMsg>{err}</ErrorMsg>}
-            <PrimaryButton onClick={handleJoin} style={{ marginTop: 8 }}>
+            <PrimaryButton onClick={handleJoin} disabled={!canJoin} style={{ marginTop: 8 }}>
               {busy ? 'Joining…' : 'Join family'}
             </PrimaryButton>
           </form>

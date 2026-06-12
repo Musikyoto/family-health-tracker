@@ -15,15 +15,16 @@ export function Avatar({ person, size = 38 }) {
 }
 
 // ── Buttons ──────────────────────────────────────────────────────────
-export function PrimaryButton({ children, onClick, full = true, icon, style }) {
+export function PrimaryButton({ children, onClick, full = true, icon, style, disabled = false }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={disabled ? undefined : onClick} disabled={disabled} style={{
       width: full ? '100%' : undefined, height: 52, borderRadius: 16, border: 'none',
-      background: T.accent, color: '#fff', fontSize: 17, fontWeight: 700, cursor: 'pointer',
-      fontFamily: 'inherit', boxShadow: T.shadowBtn, display: 'flex', alignItems: 'center',
+      background: disabled ? T.fieldBg : T.accent, color: disabled ? T.muted : '#fff',
+      fontSize: 17, fontWeight: 700, cursor: disabled ? 'default' : 'pointer',
+      fontFamily: 'inherit', boxShadow: disabled ? 'none' : T.shadowBtn, display: 'flex', alignItems: 'center',
       justifyContent: 'center', gap: 8, letterSpacing: '0.1px', ...style,
     }}>
-      {icon && <Icon name={icon} size={20} color="#fff" strokeWidth={2.2} />}
+      {icon && <Icon name={icon} size={20} color={disabled ? T.muted : '#fff'} strokeWidth={2.2} />}
       {children}
     </button>
   );
