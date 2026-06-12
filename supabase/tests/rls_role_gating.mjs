@@ -116,6 +116,21 @@ async function main() {
       check('med still exists after viewer delete attempt', still?.length === 1)
     }
 
+    // ── the worst case: viewer must not be able to make itself an editor ──
+    // memberships UPDATE policy is `using (is_editor(family_id))`, so a viewer
+    // is filtered out of the update scope → 0 rows. (A viewer DELETEing another
+    // member's row is blocked by the same is_editor branch of the DELETE policy.)
+    console.log('\nViewer cannot self-escalate (membership role change):')
+    {
+      const { data, error } = await B.from('memberships')
+        .update({ role: 'editor' }).eq('family_id', family).eq('user_id', b.userId).select()
+      check('viewer cannot UPDATE own membership to editor (0 rows)', !error && data?.length === 0,
+        error ? 'unexpected error: ' + error.message : (data?.length ? 'ESCALATED to editor' : ''))
+      const { data: m } = await A.from('memberships')
+        .select('role').eq('family_id', family).eq('user_id', b.userId).single()
+      check("viewer's role is still 'viewer' after the attempt", m?.role === 'viewer', `role=${m?.role}`)
+    }
+
     // ── editor positive control: A CAN write ──
     console.log('\nEditor can WRITE (positive control):')
     {
