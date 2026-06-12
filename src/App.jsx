@@ -35,6 +35,26 @@ export default function App({ family, role, onSignOut }) {
     [family.id]);
   React.useEffect(() => { reloadPeople(); reloadItems(); reloadMeds(); }, [reloadPeople, reloadItems, reloadMeds]);
 
+  // Refetch when the user returns to the app (tab visible / window focused) so a
+  // change made by another family member on another device shows up without a
+  // manual refresh. Debounced so visibility + focus don't double-fire.
+  React.useEffect(() => {
+    let last = 0;
+    const maybeRefetch = () => {
+      if (document.visibilityState === 'hidden') return;
+      const now = Date.now();
+      if (now - last < 1500) return;
+      last = now;
+      reloadPeople(); reloadItems(); reloadMeds();
+    };
+    document.addEventListener('visibilitychange', maybeRefetch);
+    window.addEventListener('focus', maybeRefetch);
+    return () => {
+      document.removeEventListener('visibilitychange', maybeRefetch);
+      window.removeEventListener('focus', maybeRefetch);
+    };
+  }, [reloadPeople, reloadItems, reloadMeds]);
+
   const top = stack[stack.length - 1] || null;
   const push = (o) => setStack((s) => [...s, o]);
   const pop = () => setStack((s) => s.slice(0, -1));
