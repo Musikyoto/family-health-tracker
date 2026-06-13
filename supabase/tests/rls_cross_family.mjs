@@ -191,6 +191,16 @@ async function main() {
       check("A cannot create a med in family A referencing B's person", !!error,
         error ? '' : 'CROSS-FAMILY person_id was ACCEPTED')
     }
+    // B reassigning its own membership into family A (cross-family injection).
+    // Postgres uses USING as the implicit WITH CHECK for UPDATE, so
+    // is_editor(new.family_id = A) should reject this.
+    {
+      const { data: bm } = await B.from('memberships').select('id').eq('family_id', familyB).eq('user_id', b.userId).single()
+      const { data, error } = await B.from('memberships').update({ family_id: familyA }).eq('id', bm.id).select()
+      const injected = !error && (data?.length ?? 0) > 0
+      if (injected) { try { await B.from('memberships').update({ family_id: familyB }).eq('id', bm.id) } catch { /* may fail post-injection */ } }
+      check("B cannot reassign its membership into family A", !injected, injected ? 'INJECTED into family A' : '')
+    }
   } finally {
     // ── cleanup: each user deletes every family it owns (covers leftovers) ──
     try { await A.from('families').delete().eq('created_by', a.userId) } catch { /* best effort */ }
