@@ -1,0 +1,10 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mamoriGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2E8B57"/>
+      <stop offset="1" stop-color="#1FA9A0"/>
+    </linearGradient>
+  </defs>
+  <path d="M128 284 L256 156 L384 284" fill="none" stroke="url(#mamoriGradient)" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M256 304 c-25 -38 -82 -30 -82 18 c0 38 52 66 82 88 c30 -22 82 -50 82 -88 c0 -48 -57 -56 -82 -18 Z" fill="url(#mamoriGradient)"/>
+</svg>
