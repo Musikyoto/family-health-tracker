@@ -51,8 +51,9 @@ export function CreateJoinScreen({ onDone, onSignOut, initialCode = '', initialM
     <Screen>
       <div style={{ padding: '72px 24px 24px' }}>
         <div style={{ marginBottom: 28 }}>
+          <img src="/mamori-mark.svg" alt="" width={56} height={56} style={{ display: 'block', marginBottom: 14 }} />
           <div style={{ fontSize: 28, fontWeight: 800, color: T.deep, letterSpacing: '-0.5px' }}>
-            Family Health
+            Mamori
           </div>
           <div style={{ fontSize: 16, color: T.body, marginTop: 4 }}>
             {mode === 'create' ? 'Start a family to track' : 'Join your family'}

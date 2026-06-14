@@ -56,6 +56,7 @@ export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
   };
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '60px 16px 16px' }}>
+      <img src="/mamori-mark.svg" alt="Mamori" width={30} height={30} style={{ flexShrink: 0 }} />
       <div style={{ flex: 1, display: 'flex', gap: 4, padding: 4, background: '#fff', borderRadius: 15, boxShadow: T.shadowSoft }}>
         {tab('Calendar')}{tab('Medication')}
       </div>

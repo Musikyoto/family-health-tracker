@@ -72,8 +72,9 @@ export function AuthScreen() {
       <div style={{ padding: '72px 24px 24px', display: 'flex', flexDirection: 'column', gap: 0 }}>
         {/* Wordmark */}
         <div style={{ marginBottom: 36 }}>
+          <img src="/mamori-mark.svg" alt="" width={56} height={56} style={{ display: 'block', marginBottom: 14 }} />
           <div style={{ fontSize: 28, fontWeight: 800, color: T.deep, letterSpacing: '-0.5px' }}>
-            Family Health
+            Mamori
           </div>
           <div style={{ fontSize: 16, color: T.body, marginTop: 4 }}>
             {step === 'email' && 'Sign in or create an account'}
