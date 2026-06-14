@@ -12,3 +12,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <AuthGate />
   </React.StrictMode>
 );
+
+// Register the service worker in production builds — required for the PWA to be
+// installable. Skipped in dev so it doesn't interfere with HMR.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => console.error('SW registration failed:', err));
+  });
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Mamori",
+  "short_name": "Mamori",
+  "description": "A shared tracker for your family's appointments, tests, and medications.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#E6F2EC",
+  "theme_color": "#2E8B57",
+  "icons": [
+    { "src": "/mamori-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/mamori-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
