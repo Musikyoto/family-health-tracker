@@ -181,3 +181,66 @@ export function MedForm({ people, initial, onSave, onCancel, onDelete }) {
     </div>
   );
 }
+
+// ── Form C: Contact ──────────────────────────────────────────────────
+export function ContactForm({ initial, onSave, onCancel, onDelete }) {
+  const editing = !!initial;
+  const [name, setName] = React.useState(initial?.name || '');
+  const [specialty, setSpecialty] = React.useState(initial?.specialty || '');
+  const [phones, setPhones] = React.useState(
+    initial?.phones?.length ? initial.phones.map((p) => ({ label: p.label || '', number: p.number || '' })) : [{ label: '', number: '' }]
+  );
+  const [location, setLocation] = React.useState(initial?.location || '');
+
+  const canSave = name.trim().length > 0;
+  const setPhone = (i, patch) => setPhones((cur) => cur.map((p, j) => (j === i ? { ...p, ...patch } : p)));
+  const save = () => onSave({
+    id: initial?.id,
+    name: name.trim(),
+    specialty: specialty.trim(),
+    phones: phones.filter((p) => p.number.trim()).map((p) => ({ label: p.label.trim(), number: p.number.trim() })),
+    location: location.trim(),
+  });
+
+  return (
+    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 50 }}>
+      <FormBar title={editing ? 'Edit contact' : 'New contact'} onCancel={onCancel} onSave={save} canSave={canSave} />
+      <div style={{ padding: '8px 16px 0' }}>
+        <Field label="NAME">
+          <TextInput value={name} onChange={setName} placeholder="e.g. Dr. Okafor" />
+        </Field>
+
+        <Field label="SPECIALTY">
+          <TextInput value={specialty} onChange={setSpecialty} placeholder="e.g. Cardiologist (optional)" />
+        </Field>
+
+        <Field label="PHONE NUMBERS" hint="Add one or more. Each can have a label like Clinic or Mobile.">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {phones.map((p, i) => (
+              <div key={i} style={{ background: T.card, borderRadius: 16, padding: 12, boxShadow: T.shadowSoft, position: 'relative' }}>
+                <button onClick={() => setPhones(phones.filter((_, j) => j !== i))} aria-label="Remove number" style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: '50%', border: 'none', background: T.fieldBg, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                  <Icon name="close" size={14} color={T.body} strokeWidth={2} />
+                </button>
+                <input value={p.label} placeholder="Label (optional, e.g. Clinic)" onChange={(e) => setPhone(i, { label: e.target.value })} style={{ ...inputStyle, height: 42, marginBottom: 8, paddingRight: 34 }} />
+                <input value={p.number} type="tel" placeholder="Phone number" onChange={(e) => setPhone(i, { number: e.target.value })} style={{ ...inputStyle, height: 42 }} />
+              </div>
+            ))}
+            <button onClick={() => setPhones([...phones, { label: '', number: '' }])} style={{ height: 46, borderRadius: 14, border: `1px dashed ${T.fieldBorder}`, background: T.fieldBg, color: T.accentSolid, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+              <Icon name="plus" size={17} color={T.accentSolid} strokeWidth={2.2} /> Add a number
+            </button>
+          </div>
+        </Field>
+
+        <Field label="LOCATION">
+          <TextInput value={location} onChange={setLocation} placeholder="e.g. 12 High St, Room 4 (optional)" />
+        </Field>
+
+        {editing && (
+          <div style={{ marginTop: 8 }}>
+            <GhostButton danger onClick={onDelete}><Icon name="trash" size={18} color={T.red} strokeWidth={1.9} /> Delete contact</GhostButton>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

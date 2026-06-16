@@ -3,10 +3,12 @@ import {
   listPeople, createPerson, updatePerson, deletePerson,
   listItems, createItem, updateItem, deleteItem,
   listMeds, createMed, updateMed, deleteMed,
+  listContacts, createContact, updateContact, deleteContact,
 } from './lib/api.js';
 import { CalendarTab, ItemDetail } from './screens/CalendarTab.jsx';
 import { MedicationTab } from './screens/MedicationTab.jsx';
-import { CalendarForm, MedForm } from './screens/Forms.jsx';
+import { ContactsTab } from './screens/ContactsTab.jsx';
+import { CalendarForm, MedForm, ContactForm } from './screens/Forms.jsx';
 import { SettingsHome, PeopleList, PersonForm, DeletePersonDialog, SignOutDialog } from './screens/Settings.jsx';
 import { InviteScreen } from './screens/InviteScreen.jsx';
 import { LoadingScreen } from './components/LoadingScreen.jsx';
@@ -18,6 +20,7 @@ export default function App({ family, role, onSignOut }) {
   const [people, setPeople] = React.useState(undefined); // undefined = loading
   const [items, setItems] = React.useState(undefined);
   const [meds, setMeds] = React.useState(undefined);
+  const [contacts, setContacts] = React.useState(undefined);
   const [tab, setTab] = React.useState('calendar');
   const [stack, setStack] = React.useState([]);
   const [deletePersonId, setDeletePersonId] = React.useState(null);
@@ -33,7 +36,10 @@ export default function App({ family, role, onSignOut }) {
   const reloadMeds = React.useCallback(
     () => listMeds(family.id).then(setMeds).catch((e) => { console.error('Failed to load meds:', e); setMeds([]); }),
     [family.id]);
-  React.useEffect(() => { reloadPeople(); reloadItems(); reloadMeds(); }, [reloadPeople, reloadItems, reloadMeds]);
+  const reloadContacts = React.useCallback(
+    () => listContacts(family.id).then(setContacts).catch((e) => { console.error('Failed to load contacts:', e); setContacts([]); }),
+    [family.id]);
+  React.useEffect(() => { reloadPeople(); reloadItems(); reloadMeds(); reloadContacts(); }, [reloadPeople, reloadItems, reloadMeds, reloadContacts]);
 
   // Refetch when the user returns to the app (tab visible / window focused) so a
   // change made by another family member on another device shows up without a
@@ -45,7 +51,7 @@ export default function App({ family, role, onSignOut }) {
       const now = Date.now();
       if (now - last < 1500) return;
       last = now;
-      reloadPeople(); reloadItems(); reloadMeds();
+      reloadPeople(); reloadItems(); reloadMeds(); reloadContacts();
     };
     document.addEventListener('visibilitychange', maybeRefetch);
     window.addEventListener('focus', maybeRefetch);
@@ -53,7 +59,7 @@ export default function App({ family, role, onSignOut }) {
       document.removeEventListener('visibilitychange', maybeRefetch);
       window.removeEventListener('focus', maybeRefetch);
     };
-  }, [reloadPeople, reloadItems, reloadMeds]);
+  }, [reloadPeople, reloadItems, reloadMeds, reloadContacts]);
 
   const top = stack[stack.length - 1] || null;
   const push = (o) => setStack((s) => [...s, o]);
@@ -87,7 +93,15 @@ export default function App({ family, role, onSignOut }) {
   };
   const removeMedById = async (id) => { await deleteMed(id); await reloadMeds(); };
 
-  if (people === undefined || items === undefined || meds === undefined) return <LoadingScreen label="Loading…" />;
+  // contact mutations
+  const saveContact = async (rec) => {
+    if (rec.id) await updateContact(rec.id, rec);
+    else await createContact(family.id, rec);
+    await reloadContacts();
+  };
+  const removeContactById = async (id) => { await deleteContact(id); await reloadContacts(); };
+
+  if (people === undefined || items === undefined || meds === undefined || contacts === undefined) return <LoadingScreen label="Loading…" />;
 
   const peopleById = Object.fromEntries(people.map((p) => [p.id, p]));
   const peopleSummary = people.length ? people.map((p) => p.name).join(', ') : 'No one added yet';
@@ -100,7 +114,7 @@ export default function App({ family, role, onSignOut }) {
     meds: meds.filter((m) => peopleById[m.personId]),
   };
 
-  const onAdd = () => push({ type: tab === 'calendar' ? 'calForm' : 'medForm' });
+  const onAdd = () => push({ type: tab === 'calendar' ? 'calForm' : tab === 'medication' ? 'medForm' : 'contactForm' });
   const onGear = () => push({ type: 'settings' });
 
   // overlay
@@ -139,15 +153,27 @@ export default function App({ family, role, onSignOut }) {
         onDelete={() => setDeletePersonId(top.editId)} />;
     } else if (top.type === 'invite') {
       overlay = <InviteScreen familyId={family.id} onBack={pop} />;
+    } else if (top.type === 'contactForm') {
+      const initial = top.editId ? contacts.find((x) => x.id === top.editId) : null;
+      overlay = <ContactForm initial={initial}
+        onCancel={pop}
+        onSave={async (rec) => { try { await saveContact(rec); pop(); } catch (e) { console.error('Save contact failed:', e); } }}
+        onDelete={async () => { try { await removeContactById(top.editId); closeAll(); } catch (e) { console.error('Delete contact failed:', e); } }} />;
     }
   }
 
   const onAddPerson = () => push({ type: 'personForm' });
-  const tabScreen = tab === 'calendar'
-    ? <CalendarTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
-        onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />
-    : <MedicationTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
-        onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={requestSignOut} />;
+  let tabScreen;
+  if (tab === 'calendar') {
+    tabScreen = <CalendarTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+      onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />;
+  } else if (tab === 'medication') {
+    tabScreen = <MedicationTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+      onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={requestSignOut} />;
+  } else {
+    tabScreen = <ContactsTab contacts={contacts} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
+      onOpenContact={(id) => push({ type: 'contactForm', editId: id })} onSignOut={requestSignOut} />;
+  }
 
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>

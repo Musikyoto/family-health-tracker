@@ -36,7 +36,7 @@ export function MedicationTab({ data, role, onTab, onGear, onAdd, onAddPerson, o
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 120 }}>
-      <TabHeader active="Medication" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} />
+      <TabHeader active="medication" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} />
 
       {noMeds ? (
         role === 'editor' ? (

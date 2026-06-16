@@ -202,3 +202,51 @@ export async function deleteMed(id) {
   const { error } = await supabase.from('meds').delete().eq('id', id)
   if (error) throw error
 }
+
+// ── Contacts ─────────────────────────────────────────────────────────
+// Flat family-shared list (not person-linked). phones is a jsonb list of
+// { label, number }.
+const CONTACT_COLS = 'id, name, specialty, phones, location'
+const contactFromRow = (r) => ({
+  id: r.id, name: r.name, specialty: r.specialty ?? '',
+  phones: r.phones ?? [], location: r.location ?? '',
+})
+const contactFields = (c) => ({
+  name: c.name, specialty: c.specialty, phones: c.phones, location: c.location,
+})
+
+export async function listContacts(familyId) {
+  const { data, error } = await supabase
+    .from('contacts')
+    .select(CONTACT_COLS)
+    .eq('family_id', familyId)
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return (data ?? []).map(contactFromRow)
+}
+
+export async function createContact(familyId, contact) {
+  const { data, error } = await supabase
+    .from('contacts')
+    .insert({ family_id: familyId, ...contactFields(contact) })
+    .select(CONTACT_COLS)
+    .single()
+  if (error) throw error
+  return contactFromRow(data)
+}
+
+export async function updateContact(id, contact) {
+  const { data, error } = await supabase
+    .from('contacts')
+    .update(contactFields(contact)) // family_id is immutable
+    .eq('id', id)
+    .select(CONTACT_COLS)
+    .single()
+  if (error) throw error
+  return contactFromRow(data)
+}
+
+export async function deleteContact(id) {
+  const { error } = await supabase.from('contacts').delete().eq('id', id)
+  if (error) throw error
+}
