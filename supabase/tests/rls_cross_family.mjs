@@ -72,7 +72,7 @@ async function main() {
   const b = await signIn('B', env.RLS_TEST_B_EMAIL, env.RLS_TEST_B_PASSWORD)
   const A = a.client, B = b.client
 
-  let familyA, familyB, personA, personB, itemA, medA
+  let familyA, familyB, personA, personB, itemA, medA, contactA
 
   try {
     // ── setup: each user creates their own family via the real RPC ──
@@ -89,13 +89,15 @@ async function main() {
       .insert({ family_id: familyA, person_id: personA, name: 'Secret A med' }).select('id').single().throwOnError())
     ;({ data: { id: personB } } = await B.from('people')
       .insert({ family_id: familyB, name: 'Mum B', color: 'blue' }).select('id').single().throwOnError())
+    ;({ data: { id: contactA } } = await A.from('contacts')
+      .insert({ family_id: familyA, name: 'Secret A contact', phones: [{ label: 'Clinic', number: '0123' }] }).select('id').single().throwOnError())
 
     console.log(`\nSetup: family A=${familyA.slice(0, 8)} · family B=${familyB.slice(0, 8)}`)
     console.log(`A's rows — person ${personA.slice(0, 8)} · item ${itemA.slice(0, 8)} · med ${medA.slice(0, 8)}\n`)
 
     // ── positive controls: same IDs must be visible to A, and B's own session works ──
     console.log('Positive controls (must SUCCEED — proves the probes are meaningful):')
-    for (const [tbl, id] of [['people', personA], ['items', itemA], ['meds', medA]]) {
+    for (const [tbl, id] of [['people', personA], ['items', itemA], ['meds', medA], ['contacts', contactA]]) {
       const { data, error } = await A.from(tbl).select('*').eq('id', id)
       check(`A can read its own ${tbl} row by id`, !error && data?.length === 1,
         error ? 'error: ' + error.message : '')
@@ -109,7 +111,7 @@ async function main() {
     console.log("\nIsolation — B against A's exact IDs (must all hold):")
 
     // SELECT → 0 rows, no error
-    for (const [tbl, id] of [['people', personA], ['items', itemA], ['meds', medA]]) {
+    for (const [tbl, id] of [['people', personA], ['items', itemA], ['meds', medA], ['contacts', contactA]]) {
       const { data, error } = await B.from(tbl).select('*').eq('id', id)
       check(`B cannot SELECT A's ${tbl} row`, !error && data?.length === 0,
         error ? 'unexpected error: ' + error.message : (data?.length ? `LEAKED ${data.length} row(s)` : ''))
@@ -139,6 +141,20 @@ async function main() {
       const { data, error } = await B.from('people').insert({ family_id: familyA, name: 'B-injected', color: 'blue' }).select()
       check("B cannot INSERT into A's family (blocked)", !!error,
         error ? '' : `INSERTED row ${data?.[0]?.id?.slice(0, 8)}`)
+    }
+
+    // contacts (the new table): same isolation must hold across all verbs
+    {
+      const { data: u, error: ue } = await B.from('contacts').update({ name: 'HACKED' }).eq('id', contactA).select()
+      check("B cannot UPDATE A's contact (0 rows)", !ue && u?.length === 0,
+        ue ? 'unexpected error: ' + ue.message : (u?.length ? 'MODIFIED' : ''))
+      const { data: d, error: de } = await B.from('contacts').delete().eq('id', contactA).select()
+      check("B cannot DELETE A's contact (0 rows)", !de && d?.length === 0,
+        de ? 'unexpected error: ' + de.message : (d?.length ? 'DELETED' : ''))
+      const { error: ie } = await B.from('contacts').insert({ family_id: familyA, name: 'B-injected contact' }).select()
+      check("B cannot INSERT a contact into A's family (blocked)", !!ie, ie ? '' : 'INSERTED')
+      const { data: still } = await A.from('contacts').select('id').eq('id', contactA)
+      check("A's contact still exists after B's attempts", still?.length === 1)
     }
 
     // ── access-control write paths: the invariants the whole model rests on ──

@@ -75,6 +75,8 @@ async function main() {
       .select('id').single().throwOnError()
     const { data: { id: medM } } = await A.from('meds')
       .insert({ family_id: family, person_id: personP, name: 'Med M' }).select('id').single().throwOnError()
+    const { data: { id: contactC } } = await A.from('contacts')
+      .insert({ family_id: family, name: 'Dr Contact', specialty: 'GP', phones: [{ label: 'Clinic', number: '0123' }] }).select('id').single().throwOnError()
 
     const { data: invite } = await A.from('invites')
       .select('code').eq('family_id', family).eq('role', 'viewer').eq('revoked', false).single().throwOnError()
@@ -83,7 +85,7 @@ async function main() {
 
     // ── viewer CAN read (is_member) ──
     console.log('\nViewer can READ family data (must succeed):')
-    for (const [tbl, id] of [['people', personP], ['items', itemI], ['meds', medM]]) {
+    for (const [tbl, id] of [['people', personP], ['items', itemI], ['meds', medM], ['contacts', contactC]]) {
       const { data, error } = await B.from(tbl).select('*').eq('id', id)
       check(`viewer can SELECT ${tbl}`, !error && data?.length === 1, error ? 'error: ' + error.message : '')
     }
@@ -95,6 +97,7 @@ async function main() {
       ['people', { family_id: family, name: 'V-insert', color: 'blue' }],
       ['items', { family_id: family, person_id: personP, type: 'Appointment', title: 'V', date: '2026-06-21' }],
       ['meds', { family_id: family, person_id: personP, name: 'V-med' }],
+      ['contacts', { family_id: family, name: 'V-contact' }],
     ]) {
       const { error } = await B.from(tbl).insert(row).select()
       check(`viewer cannot INSERT a ${tbl.replace(/s$/, '')}`, !!error, error ? '' : 'INSERT was ACCEPTED')
@@ -114,6 +117,17 @@ async function main() {
         error ? 'unexpected error: ' + error.message : (data?.length ? 'DELETED a row' : ''))
       const { data: still } = await A.from('meds').select('id').eq('id', medM)
       check('med still exists after viewer delete attempt', still?.length === 1)
+    }
+    // contacts: viewer can't UPDATE or DELETE (is_editor gate → 0 rows)
+    {
+      const { data, error } = await B.from('contacts').update({ name: 'HACKED' }).eq('id', contactC).select()
+      check('viewer cannot UPDATE a contact (0 rows)', !error && data?.length === 0,
+        error ? 'unexpected error: ' + error.message : (data?.length ? 'MODIFIED a row' : ''))
+      const { data: del, error: delErr } = await B.from('contacts').delete().eq('id', contactC).select()
+      check('viewer cannot DELETE a contact (0 rows)', !delErr && del?.length === 0,
+        delErr ? 'unexpected error: ' + delErr.message : (del?.length ? 'DELETED a row' : ''))
+      const { data: c } = await A.from('contacts').select('name').eq('id', contactC).single()
+      check("contact unchanged + present after viewer's attempts", c?.name === 'Dr Contact', `name="${c?.name}"`)
     }
 
     // ── the worst case: viewer must not be able to make itself an editor ──
