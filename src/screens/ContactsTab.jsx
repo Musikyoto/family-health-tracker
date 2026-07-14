@@ -24,12 +24,12 @@ function NowServingBadge({ url }) {
     : <span style={style}>{inner}</span>;
 }
 
-// Approved phase-1 card layout: name / schedule line / compact tag row /
-// hairline / soft tappable phone pills. Tokens live in theme.js so the
-// Calendar and Meds cards can adopt the same language later.
+// Approved phase-1 card layout: name / compact tag row / hairline / soft
+// tappable phone pills, each carrying its own gold schedule chip (a doctor
+// holds different days/hours at different clinics). Tokens live in theme.js
+// so the Calendar and Meds cards can adopt the same language later.
 function ContactCard({ contact, onClick }) {
-  const { name, specialty, phones, nowServing, hours } = contact;
-  const days = sortDays(contact.days); // canonical week order, defensively
+  const { name, specialty, phones, nowServing } = contact;
   return (
     <div onClick={onClick} style={{
       background: T.card, borderRadius: 18, padding: '15px 16px', boxShadow: T.shadowSoft,
@@ -37,17 +37,6 @@ function ContactCard({ contact, onClick }) {
     }}>
       {/* Name on its own line. */}
       <div style={{ fontSize: 17, fontWeight: 600, color: T.ink }}>{name}</div>
-
-      {/* Schedule line — only when days or hours are set. */}
-      {(days.length > 0 || hours) && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', rowGap: 2, marginTop: 5 }}>
-          <Icon name="clock" size={13} color={T.tealDeep} strokeWidth={2} style={{ flexShrink: 0 }} />
-          {days.length > 0 && (
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: T.tealDeep, letterSpacing: '0.3px' }}>{days.join(' · ')}</span>
-          )}
-          {hours && <span style={{ fontSize: 12.5, fontWeight: 500, color: T.sage }}>{hours}</span>}
-        </div>
-      )}
 
       {/* Compact tag row. */}
       {(specialty || nowServing) && (
@@ -65,6 +54,8 @@ function ContactCard({ contact, onClick }) {
           {phones.map((p, i) => {
             // grey meta line combines the label and per-phone location, e.g. "Miss Jo · St Luke's"
             const meta = [p.label, p.location].map((s) => (s || '').trim()).filter(Boolean).join(' · ');
+            const days = sortDays(p.days); // canonical week order, defensively
+            const hoursText = (p.hours || '').trim();
             return (
               <a key={i} href={telHref(p.number)} onClick={(e) => e.stopPropagation()}
                 style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderRadius: 12, background: T.rowBg, textDecoration: 'none' }}>
@@ -72,6 +63,16 @@ function ContactCard({ contact, onClick }) {
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {meta && <span style={{ fontSize: 11.5, fontWeight: 600, color: T.metaGrey, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{meta}</span>}
                   <span style={{ fontSize: 15, fontWeight: 500, color: T.inkSoft, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.number}</span>
+                  {/* Gold schedule chip — this clinic's days/hours, when set. */}
+                  {(days.length > 0 || hoursText) && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, alignSelf: 'flex-start', maxWidth: '100%', background: T.goldBg, borderRadius: 999, padding: '2.5px 9px', marginTop: 3 }}>
+                      <Icon name="clock" size={11.5} color={T.goldInk} strokeWidth={2} style={{ flexShrink: 0 }} />
+                      <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 500 }}>
+                        {days.length > 0 && <span style={{ color: T.goldInk, letterSpacing: '0.2px' }}>{days.join(' · ')}</span>}
+                        {hoursText && <span style={{ color: T.goldSoft, marginLeft: days.length ? 5 : 0 }}>{hoursText}</span>}
+                      </span>
+                    </span>
+                  )}
                 </span>
                 <Icon name="chevron" size={15} color={T.metaGrey} strokeWidth={2} style={{ flexShrink: 0 }} />
               </a>

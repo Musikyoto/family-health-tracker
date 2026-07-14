@@ -5,7 +5,8 @@
 export const TODAY_ISO = '2026-06-07';
 
 // Contact visiting-schedule day chips, in canonical week order. These exact
-// strings are stored in contacts.days (text[]) — see migration 010.
+// strings are stored per phone entry inside contacts.phones (jsonb) — the
+// contact-level days/hours columns were dropped in migration 011.
 export const DAYS = ['M', 'T', 'W', 'TH', 'F', 'SAT', 'SUN'];
 // Canonical-order (and deduped) copy of a selected-days array.
 export const sortDays = (days) => DAYS.filter((d) => (days || []).includes(d));

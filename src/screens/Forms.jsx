@@ -183,19 +183,19 @@ export function MedForm({ people, initial, onSave, onCancel, onDelete }) {
 }
 
 // ── Form C: Contact ──────────────────────────────────────────────────
-// Seven tap-toggle chips for a contact's visiting days (canonical week order).
-// Same interaction as the med time chips; selected = solid chip teal.
+// Seven compact tap-toggle chips for one phone entry's clinic days (canonical
+// week order). Same interaction as the med time chips; selected = solid teal.
 function DayChips({ value, onToggle }) {
   return (
-    <div style={{ display: 'flex', gap: 6 }}>
+    <div style={{ display: 'flex', gap: 5 }}>
       {DAYS.map((d) => {
         const on = value.includes(d);
         return (
           <button key={d} type="button" onClick={() => onToggle(d)} style={{
-            flex: 1, height: 40, borderRadius: 12, padding: 0,
+            flex: 1, height: 36, borderRadius: 10, padding: 0,
             border: on ? 'none' : `1px solid ${T.fieldBorder}`,
             background: on ? T.chipOn : T.fieldBg, color: on ? '#fff' : T.body,
-            fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
           }}>{d}</button>
         );
       })}
@@ -207,27 +207,31 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
   const editing = !!initial;
   const [name, setName] = React.useState(initial?.name || '');
   const [specialty, setSpecialty] = React.useState(initial?.specialty || '');
-  const [days, setDays] = React.useState(initial?.days ? [...initial.days] : []);
-  const [hours, setHours] = React.useState(initial?.hours || '');
   const [phones, setPhones] = React.useState(
     initial?.phones?.length
-      ? initial.phones.map((p) => ({ label: p.label || '', location: p.location || '', number: p.number || '' }))
-      : [{ label: '', location: '', number: '' }]
+      ? initial.phones.map((p) => ({
+          label: p.label || '', location: p.location || '', number: p.number || '',
+          days: p.days ? [...p.days] : [], hours: p.hours || '',
+        }))
+      : [{ label: '', location: '', number: '', days: [], hours: '' }]
   );
   const [nowServing, setNowServing] = React.useState(initial?.nowServing || false);
 
   const canSave = name.trim().length > 0;
-  const toggleDay = (d) => setDays((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
   const setPhone = (i, patch) => setPhones((cur) => cur.map((p, j) => (j === i ? { ...p, ...patch } : p)));
+  const togglePhoneDay = (i, d) => setPhones((cur) => cur.map((p, j) =>
+    j === i ? { ...p, days: p.days.includes(d) ? p.days.filter((x) => x !== d) : [...p.days, d] } : p));
   const save = () => onSave({
     id: initial?.id,
     name: name.trim(),
     specialty: specialty.trim(),
-    days: sortDays(days), // stored in canonical week order regardless of tap order
-    hours: hours.trim(),
     phones: phones
       .filter((p) => p.number.trim())
-      .map((p) => ({ label: p.label.trim(), location: p.location.trim(), number: p.number.trim() })),
+      .map((p) => ({
+        label: p.label.trim(), location: p.location.trim(), number: p.number.trim(),
+        days: sortDays(p.days), // canonical week order regardless of tap order
+        hours: p.hours.trim(),
+      })),
     nowServing,
   });
 
@@ -241,14 +245,6 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
 
         <Field label="SPECIALTY">
           <TextInput value={specialty} onChange={setSpecialty} placeholder="e.g. Cardiologist (optional)" />
-        </Field>
-
-        <Field label="VISITING DAYS" hint="Tap the days this contact holds clinic (optional).">
-          <DayChips value={days} onToggle={toggleDay} />
-        </Field>
-
-        <Field label="HOURS">
-          <TextInput value={hours} onChange={setHours} placeholder="e.g. 9:00 AM – 12:00 NN (optional)" />
         </Field>
 
         <Field label="ONLINE CONSULTS" hint="NowServing is a telehealth app — some doctors take online consults through it.">
@@ -266,7 +262,7 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
           </button>
         </Field>
 
-        <Field label="PHONE NUMBERS" hint="Add one or more. Each number can have its own label and location — e.g. a secretary at a specific hospital.">
+        <Field label="PHONE NUMBERS" hint="Add one or more. Each number can have its own label, location, and clinic schedule — e.g. a secretary at a specific hospital.">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {phones.map((p, i) => (
               <div key={i} style={{ background: T.card, borderRadius: 16, padding: 12, boxShadow: T.shadowSoft, position: 'relative' }}>
@@ -276,9 +272,12 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
                 <input value={p.label} placeholder="Label (optional, e.g. Miss Jo / Clinic)" onChange={(e) => setPhone(i, { label: e.target.value })} style={{ ...inputStyle, height: 42, marginBottom: 8, paddingRight: 34 }} />
                 <input value={p.location} placeholder="Location (optional, e.g. St Luke's)" onChange={(e) => setPhone(i, { location: e.target.value })} style={{ ...inputStyle, height: 42, marginBottom: 8 }} />
                 <input value={p.number} type="tel" placeholder="Phone number" onChange={(e) => setPhone(i, { number: e.target.value })} style={{ ...inputStyle, height: 42 }} />
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.muted, letterSpacing: '0.5px', margin: '12px 2px 7px' }}>SCHEDULE AT THIS CLINIC</div>
+                <DayChips value={p.days} onToggle={(d) => togglePhoneDay(i, d)} />
+                <input value={p.hours} placeholder="Hours (optional, e.g. 9:00 AM – 12:00 NN)" onChange={(e) => setPhone(i, { hours: e.target.value })} style={{ ...inputStyle, height: 42, marginTop: 8 }} />
               </div>
             ))}
-            <button onClick={() => setPhones([...phones, { label: '', location: '', number: '' }])} style={{ height: 46, borderRadius: 14, border: `1px dashed ${T.fieldBorder}`, background: T.fieldBg, color: T.accentSolid, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+            <button onClick={() => setPhones([...phones, { label: '', location: '', number: '', days: [], hours: '' }])} style={{ height: 46, borderRadius: 14, border: `1px dashed ${T.fieldBorder}`, background: T.fieldBg, color: T.accentSolid, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
               <Icon name="plus" size={17} color={T.accentSolid} strokeWidth={2.2} /> Add a number
             </button>
           </div>
