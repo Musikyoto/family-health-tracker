@@ -90,7 +90,7 @@ async function main() {
     ;({ data: { id: personB } } = await B.from('people')
       .insert({ family_id: familyB, name: 'Mum B', color: 'blue' }).select('id').single().throwOnError())
     ;({ data: { id: contactA } } = await A.from('contacts')
-      .insert({ family_id: familyA, name: 'Secret A contact', phones: [{ label: 'Clinic', number: '0123' }], now_serving: true }).select('id').single().throwOnError())
+      .insert({ family_id: familyA, name: 'Secret A contact', phones: [{ label: 'Clinic', location: 'St Lukes', number: '0123' }], now_serving: true }).select('id').single().throwOnError())
 
     console.log(`\nSetup: family A=${familyA.slice(0, 8)} · family B=${familyB.slice(0, 8)}`)
     console.log(`A's rows — person ${personA.slice(0, 8)} · item ${itemA.slice(0, 8)} · med ${medA.slice(0, 8)}\n`)

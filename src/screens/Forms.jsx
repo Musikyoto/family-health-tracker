@@ -188,9 +188,10 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
   const [name, setName] = React.useState(initial?.name || '');
   const [specialty, setSpecialty] = React.useState(initial?.specialty || '');
   const [phones, setPhones] = React.useState(
-    initial?.phones?.length ? initial.phones.map((p) => ({ label: p.label || '', number: p.number || '' })) : [{ label: '', number: '' }]
+    initial?.phones?.length
+      ? initial.phones.map((p) => ({ label: p.label || '', location: p.location || '', number: p.number || '' }))
+      : [{ label: '', location: '', number: '' }]
   );
-  const [location, setLocation] = React.useState(initial?.location || '');
   const [nowServing, setNowServing] = React.useState(initial?.nowServing || false);
 
   const canSave = name.trim().length > 0;
@@ -199,8 +200,9 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
     id: initial?.id,
     name: name.trim(),
     specialty: specialty.trim(),
-    phones: phones.filter((p) => p.number.trim()).map((p) => ({ label: p.label.trim(), number: p.number.trim() })),
-    location: location.trim(),
+    phones: phones
+      .filter((p) => p.number.trim())
+      .map((p) => ({ label: p.label.trim(), location: p.location.trim(), number: p.number.trim() })),
     nowServing,
   });
 
@@ -231,25 +233,22 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
           </button>
         </Field>
 
-        <Field label="PHONE NUMBERS" hint="Add one or more. Each can have a label like Clinic or Mobile.">
+        <Field label="PHONE NUMBERS" hint="Add one or more. Each number can have its own label and location — e.g. a secretary at a specific hospital.">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {phones.map((p, i) => (
               <div key={i} style={{ background: T.card, borderRadius: 16, padding: 12, boxShadow: T.shadowSoft, position: 'relative' }}>
                 <button onClick={() => setPhones(phones.filter((_, j) => j !== i))} aria-label="Remove number" style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: '50%', border: 'none', background: T.fieldBg, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
                   <Icon name="close" size={14} color={T.body} strokeWidth={2} />
                 </button>
-                <input value={p.label} placeholder="Label (optional, e.g. Clinic)" onChange={(e) => setPhone(i, { label: e.target.value })} style={{ ...inputStyle, height: 42, marginBottom: 8, paddingRight: 34 }} />
+                <input value={p.label} placeholder="Label (optional, e.g. Miss Jo / Clinic)" onChange={(e) => setPhone(i, { label: e.target.value })} style={{ ...inputStyle, height: 42, marginBottom: 8, paddingRight: 34 }} />
+                <input value={p.location} placeholder="Location (optional, e.g. St Luke's)" onChange={(e) => setPhone(i, { location: e.target.value })} style={{ ...inputStyle, height: 42, marginBottom: 8 }} />
                 <input value={p.number} type="tel" placeholder="Phone number" onChange={(e) => setPhone(i, { number: e.target.value })} style={{ ...inputStyle, height: 42 }} />
               </div>
             ))}
-            <button onClick={() => setPhones([...phones, { label: '', number: '' }])} style={{ height: 46, borderRadius: 14, border: `1px dashed ${T.fieldBorder}`, background: T.fieldBg, color: T.accentSolid, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+            <button onClick={() => setPhones([...phones, { label: '', location: '', number: '' }])} style={{ height: 46, borderRadius: 14, border: `1px dashed ${T.fieldBorder}`, background: T.fieldBg, color: T.accentSolid, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
               <Icon name="plus" size={17} color={T.accentSolid} strokeWidth={2.2} /> Add a number
             </button>
           </div>
-        </Field>
-
-        <Field label="LOCATION">
-          <TextInput value={location} onChange={setLocation} placeholder="e.g. 12 High St, Room 4 (optional)" />
         </Field>
 
         {editing && (

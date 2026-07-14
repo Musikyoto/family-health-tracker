@@ -13,49 +13,50 @@ const telHref = (num) => 'tel:' + String(num || '').replace(/[^\d+*#]/g, '');
 // Future-ready: pass a `url` to render it as a tappable booking link.
 function NowServingBadge({ url }) {
   const style = {
-    display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0,
-    fontSize: 12, fontWeight: 700, color: '#0C447C', background: 'rgba(59,122,196,0.14)',
-    padding: '3px 10px 3px 8px', borderRadius: 999, textDecoration: 'none',
+    display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0,
+    fontSize: 11.5, fontWeight: 700, color: '#0C447C', background: 'rgba(59,122,196,0.14)',
+    padding: '2px 8px 2px 6px', borderRadius: 999, textDecoration: 'none',
   };
-  const inner = <><Icon name="video" size={13} color="#185FA5" strokeWidth={1.9} />NowServing</>;
+  const inner = <><Icon name="video" size={12} color="#185FA5" strokeWidth={1.9} />NowServing</>;
   return url
     ? <a href={url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={style}>{inner}</a>
     : <span style={style}>{inner}</span>;
 }
 
 function ContactCard({ contact, onClick }) {
-  const { name, specialty, location, phones, nowServing } = contact;
+  const { name, specialty, phones, nowServing } = contact;
   return (
     <div onClick={onClick} style={{
       background: T.card, borderRadius: 18, padding: '14px 16px', boxShadow: T.shadowSoft,
       cursor: onClick ? 'pointer' : 'default',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 16.5, fontWeight: 700, color: T.deep, marginRight: 'auto' }}>{name}</span>
-        {specialty && (
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 10px', borderRadius: 999, flexShrink: 0 }}>{specialty}</span>
-        )}
-        {nowServing && <NowServingBadge />}
-      </div>
-      {location && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 6, color: T.body }}>
-          <Icon name="link" size={15} color={T.muted} strokeWidth={1.8} style={{ flexShrink: 0 }} />
-          <span style={{ fontSize: 13.5, fontWeight: 500 }}>{location}</span>
+      {/* Name on its own line, then a wrapping row of compact tags underneath. */}
+      <div style={{ fontSize: 16.5, fontWeight: 700, color: T.deep }}>{name}</div>
+      {(specialty || nowServing) && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 7 }}>
+          {specialty && (
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 8px', borderRadius: 999 }}>{specialty}</span>
+          )}
+          {nowServing && <NowServingBadge />}
         </div>
       )}
       {phones && phones.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-          {phones.map((p, i) => (
-            <a key={i} href={telHref(p.number)} onClick={(e) => e.stopPropagation()}
-              style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderRadius: 13, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, textDecoration: 'none' }}>
-              <Icon name="phone" size={18} color={T.accentSolid} strokeWidth={1.9} />
-              <span style={{ flex: 1, minWidth: 0 }}>
-                {p.label && <span style={{ fontSize: 12.5, fontWeight: 700, color: T.muted, letterSpacing: '0.2px', marginRight: 8 }}>{p.label}</span>}
-                <span style={{ fontSize: 15.5, fontWeight: 600, color: T.deep }}>{p.number}</span>
-              </span>
-              <Icon name="chevron" size={15} color={T.muted} strokeWidth={2} />
-            </a>
-          ))}
+          {phones.map((p, i) => {
+            // grey meta line combines the label and per-phone location, e.g. "Miss Jo · St Luke's"
+            const meta = [p.label, p.location].map((s) => (s || '').trim()).filter(Boolean).join(' · ');
+            return (
+              <a key={i} href={telHref(p.number)} onClick={(e) => e.stopPropagation()}
+                style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderRadius: 13, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, textDecoration: 'none' }}>
+                <Icon name="phone" size={18} color={T.accentSolid} strokeWidth={1.9} style={{ flexShrink: 0 }} />
+                <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {meta && <span style={{ fontSize: 12, fontWeight: 600, color: T.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{meta}</span>}
+                  <span style={{ fontSize: 15.5, fontWeight: 600, color: T.deep, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.number}</span>
+                </span>
+                <Icon name="chevron" size={15} color={T.muted} strokeWidth={2} style={{ flexShrink: 0 }} />
+              </a>
+            );
+          })}
         </div>
       )}
     </div>
