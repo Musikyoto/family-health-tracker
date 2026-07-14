@@ -1,6 +1,7 @@
 // Contacts tab — a flat, family-shared list of medical contacts (doctors,
 // clinics). Not person-linked. Numbers are tap-to-call (tel:).
 import { T } from '../lib/theme.js';
+import { sortDays } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { PrimaryButton } from '../components/ui.jsx';
 import { TabHeader, EmptyBlock, FAB } from './CalendarTab.jsx';
@@ -23,37 +24,56 @@ function NowServingBadge({ url }) {
     : <span style={style}>{inner}</span>;
 }
 
+// Approved phase-1 card layout: name / schedule line / compact tag row /
+// hairline / soft tappable phone pills. Tokens live in theme.js so the
+// Calendar and Meds cards can adopt the same language later.
 function ContactCard({ contact, onClick }) {
-  const { name, specialty, phones, nowServing } = contact;
+  const { name, specialty, phones, nowServing, hours } = contact;
+  const days = sortDays(contact.days); // canonical week order, defensively
   return (
     <div onClick={onClick} style={{
-      background: T.card, borderRadius: 18, padding: '14px 16px', boxShadow: T.shadowSoft,
+      background: T.card, borderRadius: 18, padding: '15px 16px', boxShadow: T.shadowSoft,
       cursor: onClick ? 'pointer' : 'default',
     }}>
-      {/* Name on its own line, then a wrapping row of compact tags underneath. */}
-      <div style={{ fontSize: 16.5, fontWeight: 700, color: T.deep }}>{name}</div>
+      {/* Name on its own line. */}
+      <div style={{ fontSize: 17, fontWeight: 600, color: T.ink }}>{name}</div>
+
+      {/* Schedule line — only when days or hours are set. */}
+      {(days.length > 0 || hours) && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', rowGap: 2, marginTop: 5 }}>
+          <Icon name="clock" size={13} color={T.tealDeep} strokeWidth={2} style={{ flexShrink: 0 }} />
+          {days.length > 0 && (
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: T.tealDeep, letterSpacing: '0.3px' }}>{days.join(' · ')}</span>
+          )}
+          {hours && <span style={{ fontSize: 12.5, fontWeight: 500, color: T.sage }}>{hours}</span>}
+        </div>
+      )}
+
+      {/* Compact tag row. */}
       {(specialty || nowServing) && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 7 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
           {specialty && (
             <span style={{ fontSize: 11.5, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 8px', borderRadius: 999 }}>{specialty}</span>
           )}
           {nowServing && <NowServingBadge />}
         </div>
       )}
+
+      {/* Soft tappable phone pills behind a hairline divider. */}
       {phones && phones.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.hairline}` }}>
           {phones.map((p, i) => {
             // grey meta line combines the label and per-phone location, e.g. "Miss Jo · St Luke's"
             const meta = [p.label, p.location].map((s) => (s || '').trim()).filter(Boolean).join(' · ');
             return (
               <a key={i} href={telHref(p.number)} onClick={(e) => e.stopPropagation()}
-                style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderRadius: 13, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, textDecoration: 'none' }}>
-                <Icon name="phone" size={18} color={T.accentSolid} strokeWidth={1.9} style={{ flexShrink: 0 }} />
+                style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderRadius: 12, background: T.rowBg, textDecoration: 'none' }}>
+                <Icon name="phone" size={18} color={T.tealDeep} strokeWidth={1.9} style={{ flexShrink: 0 }} />
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {meta && <span style={{ fontSize: 12, fontWeight: 600, color: T.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{meta}</span>}
-                  <span style={{ fontSize: 15.5, fontWeight: 600, color: T.deep, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.number}</span>
+                  {meta && <span style={{ fontSize: 11.5, fontWeight: 600, color: T.metaGrey, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{meta}</span>}
+                  <span style={{ fontSize: 15, fontWeight: 500, color: T.inkSoft, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.number}</span>
                 </span>
-                <Icon name="chevron" size={15} color={T.muted} strokeWidth={2} style={{ flexShrink: 0 }} />
+                <Icon name="chevron" size={15} color={T.metaGrey} strokeWidth={2} style={{ flexShrink: 0 }} />
               </a>
             );
           })}

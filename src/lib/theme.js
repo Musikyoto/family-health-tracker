@@ -19,6 +19,16 @@ export const T = {
   shadowCard: '0 8px 28px rgba(31,74,64,0.08)',
   shadowSoft: '0 2px 10px rgba(31,74,64,0.06)',
   shadowBtn: '0 6px 18px rgba(31,169,160,0.32)',
+
+  // ── Phase-1 card design language (Contacts first; Calendar/Meds adopt later) ──
+  ink: '#1F3A31',        // card title text (ink-green)
+  inkSoft: '#22372F',    // primary text inside soft rows (e.g. phone numbers)
+  tealDeep: '#0F6E56',   // schedule text + icons on light backgrounds
+  sage: '#5F7A6E',       // quiet secondary text beside tealDeep (e.g. hours)
+  metaGrey: '#7C8F84',   // meta lines inside soft rows (label · location)
+  rowBg: '#F4F8F4',      // soft tappable row background
+  chipOn: '#1D9E75',     // selected toggle-chip fill (white text on top)
+  hairline: 'rgba(31,58,49,0.08)', // divider on white cards
 };
 
 // Person identity colors (independent of theme). Presets per SPEC §13.

@@ -2,7 +2,7 @@
 // Converted from the design export to ES modules.
 import React from 'react';
 import { T, FOOD_LABEL } from '../lib/theme.js';
-import { TODAY_ISO } from '../lib/data.js';
+import { TODAY_ISO, DAYS, sortDays } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Field, TextInput, TextArea, Pill, PersonPicker, GhostButton, inputStyle } from '../components/ui.jsx';
 
@@ -183,10 +183,32 @@ export function MedForm({ people, initial, onSave, onCancel, onDelete }) {
 }
 
 // ── Form C: Contact ──────────────────────────────────────────────────
+// Seven tap-toggle chips for a contact's visiting days (canonical week order).
+// Same interaction as the med time chips; selected = solid chip teal.
+function DayChips({ value, onToggle }) {
+  return (
+    <div style={{ display: 'flex', gap: 6 }}>
+      {DAYS.map((d) => {
+        const on = value.includes(d);
+        return (
+          <button key={d} type="button" onClick={() => onToggle(d)} style={{
+            flex: 1, height: 40, borderRadius: 12, padding: 0,
+            border: on ? 'none' : `1px solid ${T.fieldBorder}`,
+            background: on ? T.chipOn : T.fieldBg, color: on ? '#fff' : T.body,
+            fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+          }}>{d}</button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ContactForm({ initial, onSave, onCancel, onDelete }) {
   const editing = !!initial;
   const [name, setName] = React.useState(initial?.name || '');
   const [specialty, setSpecialty] = React.useState(initial?.specialty || '');
+  const [days, setDays] = React.useState(initial?.days ? [...initial.days] : []);
+  const [hours, setHours] = React.useState(initial?.hours || '');
   const [phones, setPhones] = React.useState(
     initial?.phones?.length
       ? initial.phones.map((p) => ({ label: p.label || '', location: p.location || '', number: p.number || '' }))
@@ -195,11 +217,14 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
   const [nowServing, setNowServing] = React.useState(initial?.nowServing || false);
 
   const canSave = name.trim().length > 0;
+  const toggleDay = (d) => setDays((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
   const setPhone = (i, patch) => setPhones((cur) => cur.map((p, j) => (j === i ? { ...p, ...patch } : p)));
   const save = () => onSave({
     id: initial?.id,
     name: name.trim(),
     specialty: specialty.trim(),
+    days: sortDays(days), // stored in canonical week order regardless of tap order
+    hours: hours.trim(),
     phones: phones
       .filter((p) => p.number.trim())
       .map((p) => ({ label: p.label.trim(), location: p.location.trim(), number: p.number.trim() })),
@@ -216,6 +241,14 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
 
         <Field label="SPECIALTY">
           <TextInput value={specialty} onChange={setSpecialty} placeholder="e.g. Cardiologist (optional)" />
+        </Field>
+
+        <Field label="VISITING DAYS" hint="Tap the days this contact holds clinic (optional).">
+          <DayChips value={days} onToggle={toggleDay} />
+        </Field>
+
+        <Field label="HOURS">
+          <TextInput value={hours} onChange={setHours} placeholder="e.g. 9:00 AM – 12:00 NN (optional)" />
         </Field>
 
         <Field label="ONLINE CONSULTS" hint="NowServing is a telehealth app — some doctors take online consults through it.">
