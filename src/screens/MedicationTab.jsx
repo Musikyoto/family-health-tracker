@@ -1,14 +1,36 @@
 // Medication tab — Morning / Noon / Evening (SPEC §8). Converted from the design export.
+// One time bucket shows at a time, picked via a segmented control (Variant A).
+import React from 'react';
 import { T, FOOD_LABEL } from '../lib/theme.js';
 import { Icon } from '../components/Icon.jsx';
 import { Avatar, PrimaryButton } from '../components/ui.jsx';
 import { TabHeader, EmptyBlock, FAB } from './CalendarTab.jsx';
 
-const TIME_SECTIONS = [
-  { key: 'Morning', icon: 'sunrise' },
-  { key: 'Noon', icon: 'sun' },
-  { key: 'Evening', icon: 'moon' },
-];
+const TIMES = ['Morning', 'Noon', 'Evening'];
+
+// Segmented control: Morning | Noon | Evening, each with its bucket count.
+function TimeSegments({ active, counts, onSelect }) {
+  return (
+    <div style={{ display: 'flex', gap: 4, padding: 4, background: T.segBg, borderRadius: 12 }}>
+      {TIMES.map((t) => {
+        const on = active === t;
+        return (
+          <button key={t} onClick={() => onSelect(t)} style={{
+            flex: 1, height: 34, borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+            background: on ? '#fff' : 'transparent', color: on ? T.tealDeep : T.body,
+            fontSize: 12.5, fontWeight: on ? 700 : 600,
+            boxShadow: on ? '0 1px 6px rgba(31,74,64,0.10)' : 'none',
+            transition: 'background 140ms ease, color 140ms ease',
+          }}>
+            {t}
+            <span style={{ fontWeight: on ? 600 : 500, opacity: 0.75 }}>{counts[t]}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function MedRow({ med, person, onClick }) {
   const food = FOOD_LABEL[med.food];
@@ -31,8 +53,11 @@ function MedRow({ med, person, onClick }) {
 }
 
 export function MedicationTab({ data, role, onTab, onGear, onAdd, onAddPerson, onOpenMed, onSignOut }) {
+  const [time, setTime] = React.useState('Morning'); // always Morning on mount — no persistence
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
   const noMeds = data.meds.length === 0;
+  const counts = Object.fromEntries(TIMES.map((t) => [t, data.meds.filter((m) => m.times.includes(t)).length]));
+  const activeMeds = data.meds.filter((m) => m.times.includes(time));
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 120 }}>
@@ -54,27 +79,21 @@ export function MedicationTab({ data, role, onTab, onGear, onAdd, onAddPerson, o
             body="When medications are added, they'll appear here, sorted by time of day." />
         )
       ) : (
-        <div style={{ padding: '4px 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {TIME_SECTIONS.map((sec) => {
-            const meds = data.meds.filter((m) => m.times.includes(sec.key));
-            if (!meds.length) return null;
-            return (
-              <div key={sec.key}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '0 4px 9px' }}>
-                  <Icon name={sec.icon} size={19} color={T.accentSolid} strokeWidth={1.9} />
-                  <span style={{ fontSize: 15, fontWeight: 700, color: T.deep, letterSpacing: '0.3px' }}>{sec.key}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: T.muted }}>{meds.length}</span>
+        <div style={{ padding: '4px 16px 0', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <TimeSegments active={time} counts={counts} onSelect={setTime} />
+          {activeMeds.length ? (
+            <div style={{ background: T.card, borderRadius: 20, padding: '2px 16px', boxShadow: T.shadowCard }}>
+              {activeMeds.map((m, i) => (
+                <div key={m.id} style={{ borderBottom: i < activeMeds.length - 1 ? `1px solid ${T.fieldBorder}` : 'none' }}>
+                  <MedRow med={m} person={peopleById[m.personId]} onClick={role === 'editor' && onOpenMed ? () => onOpenMed(m.id) : undefined} />
                 </div>
-                <div style={{ background: T.card, borderRadius: 20, padding: '2px 16px', boxShadow: T.shadowCard }}>
-                  {meds.map((m, i) => (
-                    <div key={m.id} style={{ borderBottom: i < meds.length - 1 ? `1px solid ${T.fieldBorder}` : 'none' }}>
-                      <MedRow med={m} person={peopleById[m.personId]} onClick={role === 'editor' && onOpenMed ? () => onOpenMed(m.id) : undefined} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', color: T.metaGrey, fontSize: 13, fontStyle: 'italic', padding: '16px 0 4px' }}>
+              No {time.toLowerCase()} medicines yet.
+            </div>
+          )}
           <div style={{ textAlign: 'center', color: T.muted, fontSize: 13, fontWeight: 500, padding: '4px 0 0' }}>
             A reference list — nothing to check off.
           </div>
