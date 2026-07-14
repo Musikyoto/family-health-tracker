@@ -44,9 +44,9 @@ const slotBtnStyle = {
 // Tab key (used for routing + active state) is decoupled from the display
 // label, so the medication tab can show "Meds" while staying keyed 'medication'.
 const TABS = [
-  { key: 'calendar', label: 'Calendar' },
-  { key: 'medication', label: 'Meds' },
-  { key: 'contacts', label: 'Contacts' },
+  { key: 'calendar', label: 'Calendar', icon: 'calendar' },
+  { key: 'medication', label: 'Meds', icon: 'pill' },
+  { key: 'contacts', label: 'Contacts', icon: 'stethoscope' },
 ];
 export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
   return (
@@ -57,12 +57,16 @@ export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
           const on = active === t.key;
           return (
             <button key={t.key} onClick={() => onTab(t.key)} style={{
-              flex: 1, height: 38, borderRadius: 11, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-              background: on ? T.accent : 'transparent', color: on ? '#fff' : T.body,
-              fontSize: 13.5, fontWeight: on ? 700 : 600, letterSpacing: '0.1px',
-              boxShadow: on ? '0 3px 10px rgba(31,169,160,0.30)' : 'none',
+              flex: 1, height: 46, borderRadius: 11, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, padding: 0,
+              background: on ? T.tealDeep : 'transparent', color: on ? '#fff' : T.body,
+              fontSize: 11, fontWeight: on ? 700 : 600, letterSpacing: '0.1px',
+              boxShadow: on ? '0 3px 10px rgba(15,110,86,0.28)' : 'none',
               transition: 'background 160ms ease, color 160ms ease',
-            }}>{t.label}</button>
+            }}>
+              <Icon name={t.icon} size={16} color={on ? '#fff' : T.body} strokeWidth={1.9} />
+              {t.label}
+            </button>
           );
         })}
       </div>
