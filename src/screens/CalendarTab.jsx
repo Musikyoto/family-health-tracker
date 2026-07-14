@@ -4,6 +4,7 @@ import { T } from '../lib/theme.js';
 import { TODAY_ISO } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Avatar, PrimaryButton, TopBar } from '../components/ui.jsx';
+import { Copyright } from '../components/Copyright.jsx';
 
 const TODAY = TODAY_ISO; // '2026-06-07'
 const pad2 = (n) => String(n).padStart(2, '0');
@@ -246,6 +247,7 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
         </div>
       )}
 
+      <Copyright />
       {role === 'editor' && <FAB onClick={onAdd} />}
     </div>
   );

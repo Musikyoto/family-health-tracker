@@ -5,6 +5,7 @@ import { sortDays } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { PrimaryButton } from '../components/ui.jsx';
 import { TabHeader, EmptyBlock, FAB } from './CalendarTab.jsx';
+import { Copyright } from '../components/Copyright.jsx';
 
 // Strip a displayed number down to a dialable tel: target.
 const telHref = (num) => 'tel:' + String(num || '').replace(/[^\d+*#]/g, '');
@@ -117,6 +118,7 @@ export function ContactsTab({ contacts, role, onTab, onGear, onAdd, onOpenContac
         </div>
       )}
 
+      <Copyright />
       {role === 'editor' && <FAB onClick={onAdd} />}
     </div>
   );

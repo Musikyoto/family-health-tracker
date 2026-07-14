@@ -1,5 +1,6 @@
 import React from 'react'
 import { Screen, PrimaryButton, GhostButton, TextInput, Field, ErrorMsg, InlineLink } from '../components/ui.jsx'
+import { Copyright } from '../components/Copyright.jsx'
 import { T } from '../lib/theme.js'
 import { sendMagicLink, signInWithPassword, signUpWithPassword } from '../lib/auth.js'
 
@@ -174,6 +175,8 @@ export function AuthScreen() {
             </GhostButton>
           </form>
         )}
+
+        <Copyright style={{ marginTop: 40 }} />
       </div>
     </Screen>
   )

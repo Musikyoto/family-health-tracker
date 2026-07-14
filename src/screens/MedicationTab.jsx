@@ -5,6 +5,7 @@ import { T, FOOD_LABEL } from '../lib/theme.js';
 import { Icon } from '../components/Icon.jsx';
 import { Avatar, PrimaryButton } from '../components/ui.jsx';
 import { TabHeader, EmptyBlock, FAB } from './CalendarTab.jsx';
+import { Copyright } from '../components/Copyright.jsx';
 
 const TIMES = ['Morning', 'Noon', 'Evening'];
 
@@ -100,6 +101,7 @@ export function MedicationTab({ data, role, onTab, onGear, onAdd, onAddPerson, o
         </div>
       )}
 
+      <Copyright />
       {role === 'editor' && <FAB onClick={onAdd} />}
     </div>
   );
