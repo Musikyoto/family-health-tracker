@@ -183,7 +183,7 @@ export function MedForm({ people, initial, onSave, onCancel, onDelete }) {
 }
 
 // ── Form C: Contact ──────────────────────────────────────────────────
-// Seven compact tap-toggle chips for one phone entry's clinic days (canonical
+// Seven compact tap-toggle chips for one schedule pair's days (canonical
 // week order). Same interaction as the med time chips; selected = solid teal.
 function DayChips({ value, onToggle }) {
   return (
@@ -207,20 +207,25 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
   const editing = !!initial;
   const [name, setName] = React.useState(initial?.name || '');
   const [specialty, setSpecialty] = React.useState(initial?.specialty || '');
+  const emptySchedule = () => ({ days: [], hours: '' });
   const [phones, setPhones] = React.useState(
     initial?.phones?.length
       ? initial.phones.map((p) => ({
           label: p.label || '', location: p.location || '', number: p.number || '',
-          days: p.days ? [...p.days] : [], hours: p.hours || '',
+          schedules: p.schedules?.length
+            ? p.schedules.map((s) => ({ days: s.days ? [...s.days] : [], hours: s.hours || '' }))
+            : [emptySchedule()], // one empty group shows by default
         }))
-      : [{ label: '', location: '', number: '', days: [], hours: '' }]
+      : [{ label: '', location: '', number: '', schedules: [emptySchedule()] }]
   );
   const [nowServing, setNowServing] = React.useState(initial?.nowServing || false);
 
   const canSave = name.trim().length > 0;
   const setPhone = (i, patch) => setPhones((cur) => cur.map((p, j) => (j === i ? { ...p, ...patch } : p)));
-  const togglePhoneDay = (i, d) => setPhones((cur) => cur.map((p, j) =>
-    j === i ? { ...p, days: p.days.includes(d) ? p.days.filter((x) => x !== d) : [...p.days, d] } : p));
+  const setSchedules = (i, fn) => setPhones((cur) => cur.map((p, j) => (j === i ? { ...p, schedules: fn(p.schedules) } : p)));
+  const setSchedule = (i, si, patch) => setSchedules(i, (list) => list.map((s, k) => (k === si ? { ...s, ...patch } : s)));
+  const toggleScheduleDay = (i, si, d) => setSchedules(i, (list) => list.map((s, k) =>
+    k === si ? { ...s, days: s.days.includes(d) ? s.days.filter((x) => x !== d) : [...s.days, d] } : s));
   const save = () => onSave({
     id: initial?.id,
     name: name.trim(),
@@ -229,8 +234,9 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
       .filter((p) => p.number.trim())
       .map((p) => ({
         label: p.label.trim(), location: p.location.trim(), number: p.number.trim(),
-        days: sortDays(p.days), // canonical week order regardless of tap order
-        hours: p.hours.trim(),
+        schedules: p.schedules
+          .map((s) => ({ days: sortDays(s.days), hours: s.hours.trim() })) // canonical week order regardless of tap order
+          .filter((s) => s.days.length > 0 || s.hours), // drop empty pairs
       })),
     nowServing,
   });
@@ -273,11 +279,25 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
                 <input value={p.location} placeholder="Location (optional, e.g. St Luke's)" onChange={(e) => setPhone(i, { location: e.target.value })} style={{ ...inputStyle, height: 42, marginBottom: 8 }} />
                 <input value={p.number} type="tel" placeholder="Phone number" onChange={(e) => setPhone(i, { number: e.target.value })} style={{ ...inputStyle, height: 42 }} />
                 <div style={{ fontSize: 11, fontWeight: 700, color: T.muted, letterSpacing: '0.5px', margin: '12px 2px 7px' }}>SCHEDULE AT THIS CLINIC</div>
-                <DayChips value={p.days} onToggle={(d) => togglePhoneDay(i, d)} />
-                <input value={p.hours} placeholder="Hours (optional, e.g. 9:00 AM – 12:00 NN)" onChange={(e) => setPhone(i, { hours: e.target.value })} style={{ ...inputStyle, height: 42, marginTop: 8 }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {p.schedules.map((s, si) => (
+                    <div key={si} style={si > 0 ? { borderTop: `1px solid ${T.hairline}`, paddingTop: 10 } : undefined}>
+                      <DayChips value={s.days} onToggle={(d) => toggleScheduleDay(i, si, d)} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                        <input value={s.hours} placeholder="Hours (optional, e.g. 9:00 AM – 12:00 NN)" onChange={(e) => setSchedule(i, si, { hours: e.target.value })} style={{ ...inputStyle, height: 42, flex: 1, minWidth: 0 }} />
+                        <button onClick={() => setSchedules(i, (list) => list.filter((_, k) => k !== si))} aria-label="Remove schedule" style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: T.fieldBg, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, flexShrink: 0 }}>
+                          <Icon name="close" size={14} color={T.body} strokeWidth={2} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={() => setSchedules(i, (list) => [...list, emptySchedule()])} style={{ height: 38, borderRadius: 12, border: `1px dashed ${T.fieldBorder}`, background: T.fieldBg, color: T.accentSolid, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <Icon name="plus" size={15} color={T.accentSolid} strokeWidth={2.2} /> Add schedule
+                  </button>
+                </div>
               </div>
             ))}
-            <button onClick={() => setPhones([...phones, { label: '', location: '', number: '', days: [], hours: '' }])} style={{ height: 46, borderRadius: 14, border: `1px dashed ${T.fieldBorder}`, background: T.fieldBg, color: T.accentSolid, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+            <button onClick={() => setPhones([...phones, { label: '', location: '', number: '', schedules: [emptySchedule()] }])} style={{ height: 46, borderRadius: 14, border: `1px dashed ${T.fieldBorder}`, background: T.fieldBg, color: T.accentSolid, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
               <Icon name="plus" size={17} color={T.accentSolid} strokeWidth={2.2} /> Add a number
             </button>
           </div>

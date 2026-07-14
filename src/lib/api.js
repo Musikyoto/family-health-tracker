@@ -205,13 +205,26 @@ export async function deleteMed(id) {
 
 // ── Contacts ─────────────────────────────────────────────────────────
 // Flat family-shared list (not person-linked). phones is a jsonb list of
-// { label, location, number, days, hours } — location AND schedule are
-// per-phone (one contact holds different days/hours at different clinics),
-// so there are no contact-level location/days/hours columns.
+// { label, location, number, schedules: [{ days, hours }] } — location and
+// schedules are per-phone, and one number can hold several day/hour pairs
+// (same clinic, different hours on different days).
+//
+// Backward-compat read: before schedules, a phone carried a single flat
+// { days, hours } — surface that as schedules[0]. The form only writes the
+// new shape, so old entries upgrade on their next save. Normalizing here
+// means the card and form never see the old shape.
+const phoneFromJson = (p) => ({
+  label: p.label ?? '', location: p.location ?? '', number: p.number ?? '',
+  schedules: Array.isArray(p.schedules)
+    ? p.schedules.map((s) => ({ days: s?.days ?? [], hours: s?.hours ?? '' }))
+    : (p.days?.length || (p.hours ?? '').trim()
+        ? [{ days: p.days ?? [], hours: p.hours ?? '' }]
+        : []),
+})
 const CONTACT_COLS = 'id, name, specialty, phones, now_serving'
 const contactFromRow = (r) => ({
   id: r.id, name: r.name, specialty: r.specialty ?? '',
-  phones: r.phones ?? [], nowServing: r.now_serving ?? false,
+  phones: (r.phones ?? []).map(phoneFromJson), nowServing: r.now_serving ?? false,
 })
 const contactFields = (c) => ({
   name: c.name, specialty: c.specialty, phones: c.phones, now_serving: !!c.nowServing,

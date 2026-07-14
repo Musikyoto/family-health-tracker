@@ -76,7 +76,7 @@ async function main() {
     const { data: { id: medM } } = await A.from('meds')
       .insert({ family_id: family, person_id: personP, name: 'Med M' }).select('id').single().throwOnError()
     const { data: { id: contactC } } = await A.from('contacts')
-      .insert({ family_id: family, name: 'Dr Contact', specialty: 'GP', phones: [{ label: 'Clinic', location: 'St Lukes', number: '0123', days: ['M', 'W', 'F'], hours: '9:00 AM - 12:00 NN' }], now_serving: true }).select('id').single().throwOnError()
+      .insert({ family_id: family, name: 'Dr Contact', specialty: 'GP', phones: [{ label: 'Clinic', location: 'St Lukes', number: '0123', schedules: [{ days: ['M', 'W'], hours: '1:00 PM - 3:00 PM' }, { days: ['F'], hours: '8:00 AM - 10:00 AM' }] }], now_serving: true }).select('id').single().throwOnError()
 
     const { data: invite } = await A.from('invites')
       .select('code').eq('family_id', family).eq('role', 'viewer').eq('revoked', false).single().throwOnError()
@@ -159,16 +159,20 @@ async function main() {
       const { data: u } = await B.from('contacts').update({ now_serving: false }).eq('id', contactC).select()
       check('viewer cannot change now_serving (0 rows)', !u?.length, u?.length ? 'CHANGED' : '')
     }
-    // per-phone schedule: days + hours ride INSIDE phones jsonb (the
-    // contact-level columns are dropped by migration 011)
+    // per-phone schedule pairs: one number can hold several {days, hours}
+    // sets inside phones jsonb (e.g. M·W afternoons + F mornings)
     {
       const { data } = await A.from('contacts').select('phones').eq('id', contactC).single()
-      const ph = data?.phones?.[0]
-      check('editor round-trips per-phone days (M,W,F)', JSON.stringify(ph?.days) === JSON.stringify(['M', 'W', 'F']), `days=${JSON.stringify(ph?.days)}`)
-      check('editor round-trips per-phone hours', ph?.hours === '9:00 AM - 12:00 NN', `hours=${JSON.stringify(ph?.hours)}`)
+      const sch = data?.phones?.[0]?.schedules
+      check('editor round-trips schedule pair 1 (M·W 1-3 PM)',
+        JSON.stringify(sch?.[0]?.days) === JSON.stringify(['M', 'W']) && sch?.[0]?.hours === '1:00 PM - 3:00 PM',
+        `sch[0]=${JSON.stringify(sch?.[0])}`)
+      check('editor round-trips schedule pair 2 (F 8-10 AM)',
+        JSON.stringify(sch?.[1]?.days) === JSON.stringify(['F']) && sch?.[1]?.hours === '8:00 AM - 10:00 AM',
+        `sch[1]=${JSON.stringify(sch?.[1])}`)
       const { data: u } = await B.from('contacts')
-        .update({ phones: [{ label: 'HACKED', number: '999', days: ['SUN'], hours: 'HACKED' }] }).eq('id', contactC).select()
-      check('viewer cannot rewrite the phones schedule (0 rows)', !u?.length, u?.length ? 'CHANGED' : '')
+        .update({ phones: [{ label: 'HACKED', number: '999', schedules: [{ days: ['SUN'], hours: 'HACKED' }] }] }).eq('id', contactC).select()
+      check('viewer cannot rewrite the phones schedules (0 rows)', !u?.length, u?.length ? 'CHANGED' : '')
     }
   } finally {
     try { await A.from('families').delete().eq('created_by', a.userId) } catch { /* best effort */ }

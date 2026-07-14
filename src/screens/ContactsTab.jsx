@@ -25,9 +25,9 @@ function NowServingBadge({ url }) {
 }
 
 // Approved phase-1 card layout: name / compact tag row / hairline / soft
-// tappable phone pills, each carrying its own gold schedule chip (a doctor
-// holds different days/hours at different clinics). Tokens live in theme.js
-// so the Calendar and Meds cards can adopt the same language later.
+// tappable phone pills, each stacking one gold chip per schedule pair (the
+// same number can have different hours on different days). Tokens live in
+// theme.js so the Calendar and Meds cards can adopt the same language later.
 function ContactCard({ contact, onClick }) {
   const { name, specialty, phones, nowServing } = contact;
   return (
@@ -54,8 +54,10 @@ function ContactCard({ contact, onClick }) {
           {phones.map((p, i) => {
             // grey meta line combines the label and per-phone location, e.g. "Miss Jo · St Luke's"
             const meta = [p.label, p.location].map((s) => (s || '').trim()).filter(Boolean).join(' · ');
-            const days = sortDays(p.days); // canonical week order, defensively
-            const hoursText = (p.hours || '').trim();
+            // one gold chip per schedule pair — canonical day order, empty pairs skipped
+            const schedules = (p.schedules ?? [])
+              .map((s) => ({ days: sortDays(s?.days), hours: (s?.hours || '').trim() }))
+              .filter((s) => s.days.length > 0 || s.hours);
             return (
               <a key={i} href={telHref(p.number)} onClick={(e) => e.stopPropagation()}
                 style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderRadius: 12, background: T.rowBg, textDecoration: 'none' }}>
@@ -63,14 +65,18 @@ function ContactCard({ contact, onClick }) {
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {meta && <span style={{ fontSize: 11.5, fontWeight: 600, color: T.metaGrey, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{meta}</span>}
                   <span style={{ fontSize: 15, fontWeight: 500, color: T.inkSoft, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.number}</span>
-                  {/* Gold schedule chip — this clinic's days/hours, when set. */}
-                  {(days.length > 0 || hoursText) && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, alignSelf: 'flex-start', maxWidth: '100%', background: T.goldBg, borderRadius: 999, padding: '2.5px 9px', marginTop: 3 }}>
-                      <Icon name="clock" size={11.5} color={T.goldInk} strokeWidth={2} style={{ flexShrink: 0 }} />
-                      <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 500 }}>
-                        {days.length > 0 && <span style={{ color: T.goldInk, letterSpacing: '0.2px' }}>{days.join(' · ')}</span>}
-                        {hoursText && <span style={{ color: T.goldSoft, marginLeft: days.length ? 5 : 0 }}>{hoursText}</span>}
-                      </span>
+                  {/* Gold schedule chips — one per day/hour pair at this clinic. */}
+                  {schedules.length > 0 && (
+                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, marginTop: 3 }}>
+                      {schedules.map((s, si) => (
+                        <span key={si} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, maxWidth: '100%', background: T.goldBg, borderRadius: 999, padding: '2.5px 9px' }}>
+                          <Icon name="clock" size={11.5} color={T.goldInk} strokeWidth={2} style={{ flexShrink: 0 }} />
+                          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 500 }}>
+                            {s.days.length > 0 && <span style={{ color: T.goldInk, letterSpacing: '0.2px' }}>{s.days.join(' · ')}</span>}
+                            {s.hours && <span style={{ color: T.goldSoft, marginLeft: s.days.length ? 5 : 0 }}>{s.hours}</span>}
+                          </span>
+                        </span>
+                      ))}
                     </span>
                   )}
                 </span>
