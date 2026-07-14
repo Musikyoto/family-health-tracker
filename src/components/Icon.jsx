@@ -33,6 +33,7 @@ export function Icon({ name, size = 22, color = 'currentColor', strokeWidth = 1.
     alert: <><path d="M12 4 2.5 20h19z" /><path d="M12 10v4M12 17.4v.1" /></>,
     logout: <><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" /><path d="M10 17l5-5-5-5M15 12H3" /></>,
     phone: <path d="M21 16.5v2.6a1.8 1.8 0 0 1-2 1.8 17.6 17.6 0 0 1-7.7-2.7 17 17 0 0 1-5.3-5.3A17.6 17.6 0 0 1 3.1 5.1 1.8 1.8 0 0 1 4.9 3h2.6a1.8 1.8 0 0 1 1.8 1.6c.1.9.3 1.7.6 2.5a1.8 1.8 0 0 1-.4 1.9l-1.1 1.1a14 14 0 0 0 5.3 5.3l1.1-1.1a1.8 1.8 0 0 1 1.9-.4c.8.3 1.6.5 2.5.6a1.8 1.8 0 0 1 1.6 1.8z" />,
+    video: <><rect x="3" y="6" width="13" height="12" rx="2.6" /><path d="M16 10.5l5-3v9l-5-3z" /></>,
   };
   return <svg {...common}>{paths[name] || null}</svg>;
 }

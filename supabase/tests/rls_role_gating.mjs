@@ -76,7 +76,7 @@ async function main() {
     const { data: { id: medM } } = await A.from('meds')
       .insert({ family_id: family, person_id: personP, name: 'Med M' }).select('id').single().throwOnError()
     const { data: { id: contactC } } = await A.from('contacts')
-      .insert({ family_id: family, name: 'Dr Contact', specialty: 'GP', phones: [{ label: 'Clinic', number: '0123' }] }).select('id').single().throwOnError()
+      .insert({ family_id: family, name: 'Dr Contact', specialty: 'GP', phones: [{ label: 'Clinic', number: '0123' }], now_serving: true }).select('id').single().throwOnError()
 
     const { data: invite } = await A.from('invites')
       .select('code').eq('family_id', family).eq('role', 'viewer').eq('revoked', false).single().throwOnError()
@@ -150,6 +150,13 @@ async function main() {
     {
       const { data, error } = await A.from('people').update({ name: 'Person P (edited)' }).eq('id', personP).select()
       check('editor CAN update a person', !error && data?.length === 1, error ? 'error: ' + error.message : '')
+    }
+    // now_serving (the new column) falls under the existing contacts RLS
+    {
+      const { data } = await A.from('contacts').select('now_serving').eq('id', contactC).single()
+      check('editor wrote now_serving=true (new column under editor-write)', data?.now_serving === true, `now_serving=${data?.now_serving}`)
+      const { data: u } = await B.from('contacts').update({ now_serving: false }).eq('id', contactC).select()
+      check('viewer cannot change now_serving (0 rows)', !u?.length, u?.length ? 'CHANGED' : '')
     }
   } finally {
     try { await A.from('families').delete().eq('created_by', a.userId) } catch { /* best effort */ }

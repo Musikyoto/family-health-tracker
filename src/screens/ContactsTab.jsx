@@ -8,18 +8,34 @@ import { TabHeader, EmptyBlock, FAB } from './CalendarTab.jsx';
 // Strip a displayed number down to a dialable tel: target.
 const telHref = (num) => 'tel:' + String(num || '').replace(/[^\d+*#]/g, '');
 
+// NowServing (telehealth) capability badge. Deliberately a different tint from
+// the teal specialty pill so it reads as a capability, not a specialty.
+// Future-ready: pass a `url` to render it as a tappable booking link.
+function NowServingBadge({ url }) {
+  const style = {
+    display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0,
+    fontSize: 12, fontWeight: 700, color: '#0C447C', background: 'rgba(59,122,196,0.14)',
+    padding: '3px 10px 3px 8px', borderRadius: 999, textDecoration: 'none',
+  };
+  const inner = <><Icon name="video" size={13} color="#185FA5" strokeWidth={1.9} />NowServing</>;
+  return url
+    ? <a href={url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={style}>{inner}</a>
+    : <span style={style}>{inner}</span>;
+}
+
 function ContactCard({ contact, onClick }) {
-  const { name, specialty, location, phones } = contact;
+  const { name, specialty, location, phones, nowServing } = contact;
   return (
     <div onClick={onClick} style={{
       background: T.card, borderRadius: 18, padding: '14px 16px', boxShadow: T.shadowSoft,
       cursor: onClick ? 'pointer' : 'default',
     }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <span style={{ flex: 1, fontSize: 16.5, fontWeight: 700, color: T.deep }}>{name}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 16.5, fontWeight: 700, color: T.deep, marginRight: 'auto' }}>{name}</span>
         {specialty && (
           <span style={{ fontSize: 12.5, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 10px', borderRadius: 999, flexShrink: 0 }}>{specialty}</span>
         )}
+        {nowServing && <NowServingBadge />}
       </div>
       {location && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 6, color: T.body }}>

@@ -191,6 +191,7 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
     initial?.phones?.length ? initial.phones.map((p) => ({ label: p.label || '', number: p.number || '' })) : [{ label: '', number: '' }]
   );
   const [location, setLocation] = React.useState(initial?.location || '');
+  const [nowServing, setNowServing] = React.useState(initial?.nowServing || false);
 
   const canSave = name.trim().length > 0;
   const setPhone = (i, patch) => setPhones((cur) => cur.map((p, j) => (j === i ? { ...p, ...patch } : p)));
@@ -200,6 +201,7 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
     specialty: specialty.trim(),
     phones: phones.filter((p) => p.number.trim()).map((p) => ({ label: p.label.trim(), number: p.number.trim() })),
     location: location.trim(),
+    nowServing,
   });
 
   return (
@@ -212,6 +214,21 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
 
         <Field label="SPECIALTY">
           <TextInput value={specialty} onChange={setSpecialty} placeholder="e.g. Cardiologist (optional)" />
+        </Field>
+
+        <Field label="ONLINE CONSULTS" hint="NowServing is a telehealth app — some doctors take online consults through it.">
+          <button type="button" onClick={() => setNowServing((v) => !v)} style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px',
+            borderRadius: 14, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, cursor: 'pointer', fontFamily: 'inherit',
+          }}>
+            <div style={{
+              width: 24, height: 24, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: nowServing ? T.accent : '#fff', border: nowServing ? 'none' : `2px solid ${T.faint}`,
+            }}>
+              {nowServing && <Icon name="check" size={15} color="#fff" strokeWidth={2.8} />}
+            </div>
+            <span style={{ fontSize: 16, fontWeight: 600, color: T.deep }}>Available on NowServing</span>
+          </button>
         </Field>
 
         <Field label="PHONE NUMBERS" hint="Add one or more. Each can have a label like Clinic or Mobile.">

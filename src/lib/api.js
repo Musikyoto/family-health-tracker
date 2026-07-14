@@ -206,13 +206,13 @@ export async function deleteMed(id) {
 // ── Contacts ─────────────────────────────────────────────────────────
 // Flat family-shared list (not person-linked). phones is a jsonb list of
 // { label, number }.
-const CONTACT_COLS = 'id, name, specialty, phones, location'
+const CONTACT_COLS = 'id, name, specialty, phones, location, now_serving'
 const contactFromRow = (r) => ({
   id: r.id, name: r.name, specialty: r.specialty ?? '',
-  phones: r.phones ?? [], location: r.location ?? '',
+  phones: r.phones ?? [], location: r.location ?? '', nowServing: r.now_serving ?? false,
 })
 const contactFields = (c) => ({
-  name: c.name, specialty: c.specialty, phones: c.phones, location: c.location,
+  name: c.name, specialty: c.specialty, phones: c.phones, location: c.location, now_serving: !!c.nowServing,
 })
 
 export async function listContacts(familyId) {
