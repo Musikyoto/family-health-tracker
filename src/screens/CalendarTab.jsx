@@ -4,6 +4,7 @@ import { T } from '../lib/theme.js';
 import { TODAY_ISO } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Avatar, PrimaryButton, TopBar } from '../components/ui.jsx';
+import { NowServingBadge, ContactPhoneList } from '../components/ContactPhones.jsx';
 import { Copyright } from '../components/Copyright.jsx';
 
 const TODAY = TODAY_ISO; // '2026-06-07'
@@ -291,6 +292,21 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
           <Row icon="calendar" label="DATE" value={dateStr} />
           {item.time && <Row icon="clock" label="TIME" value={item.time} />}
           {item.description && <Row icon="doc" label="DESCRIPTION" value={item.description} />}
+
+          {/* Doctor — only when a contact is linked (items.contact_id) */}
+          {item.contact && (
+            <div style={{ padding: '16px 0 14px', borderBottom: `1px solid ${T.fieldBorder}` }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted, letterSpacing: '0.3px', marginBottom: 8 }}>DOCTOR</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: item.contact.phones?.length ? 10 : 0 }}>
+                <span style={{ fontSize: 16, fontWeight: 600, color: T.ink }}>{item.contact.name}</span>
+                {item.contact.specialty && (
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 8px', borderRadius: 999 }}>{item.contact.specialty}</span>
+                )}
+                {item.contact.nowServing && <NowServingBadge />}
+              </div>
+              {item.contact.phones?.length > 0 && <ContactPhoneList phones={item.contact.phones} />}
+            </div>
+          )}
 
           {/* References */}
           <div style={{ paddingTop: 16 }}>
