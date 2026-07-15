@@ -2,7 +2,13 @@
 // While we build the UI, data lives here as in-memory seed data.
 // This is the layer that will later be swapped for Supabase.
 
-export const TODAY_ISO = '2026-06-07';
+// Device-local calendar date (YYYY-MM-DD), computed on demand so "today"
+// comparisons re-badge after midnight. Local getters on purpose — the app
+// has no timezone conversion anywhere (toISOString would shift to UTC).
+export const todayIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 // Contact visiting-schedule day chips, in canonical week order. These exact
 // strings are stored in each phone entry's schedules pairs inside

@@ -2,7 +2,7 @@
 // Converted from the design export to ES modules.
 import React from 'react';
 import { T, FOOD_LABEL } from '../lib/theme.js';
-import { TODAY_ISO, DAYS, sortDays } from '../lib/data.js';
+import { todayIso, DAYS, sortDays } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Field, TextInput, TextArea, Pill, PersonPicker, GhostButton, inputStyle } from '../components/ui.jsx';
 
@@ -46,7 +46,7 @@ export function CalendarForm({ people, contacts = [], initial, onSave, onCancel,
   const [customType, setCustomType] = React.useState(BASE_TYPES.includes(initial?.type) ? '' : (initial?.type || ''));
   const [showCustom, setShowCustom] = React.useState(false);
   const [title, setTitle] = React.useState(initial?.title || '');
-  const [date, setDate] = React.useState(initial?.date || TODAY_ISO);
+  const [date, setDate] = React.useState(() => initial?.date || todayIso()); // computed at form open
   const [time, setTime] = React.useState(to24(initial?.time || ''));
   const [contactId, setContactId] = React.useState(initial?.contactId || null);
   const [description, setDescription] = React.useState(initial?.description || '');

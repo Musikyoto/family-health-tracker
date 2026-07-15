@@ -1,13 +1,12 @@
 // Calendar tab + Item detail — SPEC §6, §7. Converted from the design export.
 import React from 'react';
 import { T } from '../lib/theme.js';
-import { TODAY_ISO } from '../lib/data.js';
+import { todayIso } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Avatar, PrimaryButton, TopBar } from '../components/ui.jsx';
 import { NowServingBadge, ContactPhoneList } from '../components/ContactPhones.jsx';
 import { Copyright } from '../components/Copyright.jsx';
 
-const TODAY = TODAY_ISO; // '2026-06-07'
 const pad2 = (n) => String(n).padStart(2, '0');
 const isoOf = (y, m, d) => `${y}-${pad2(m + 1)}-${pad2(d)}`;
 const FULL_WD = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -132,9 +131,13 @@ function ItemRow({ item, person, onClick }) {
 }
 
 export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onOpenItem, onSignOut }) {
-  const [vy, setVy] = React.useState(2026);
-  const [vm, setVm] = React.useState(5); // June
-  const [selected, setSelected] = React.useState(TODAY);
+  // "today" is computed per render (so the badge stays honest across
+  // midnight), but the visible month + selection initialize ONCE at mount —
+  // the focus refetch must never move the user's navigation.
+  const today = todayIso();
+  const [vy, setVy] = React.useState(() => Number(todayIso().slice(0, 4)));
+  const [vm, setVm] = React.useState(() => Number(todayIso().slice(5, 7)) - 1);
+  const [selected, setSelected] = React.useState(() => todayIso());
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
 
   const itemsByDate = {};
@@ -183,7 +186,7 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
             {week.map((cell, ci) => {
               const iso = cell.inMonth ? isoOf(vy, vm, cell.day) : null;
               const has = iso && itemsByDate[iso];
-              const isToday = iso === TODAY;
+              const isToday = iso === today;
               const isSel = iso && iso === selected && !isToday;
               const tappable = isToday || has;
               let numColor = T.muted, weight = 400, circle = {};
@@ -230,7 +233,7 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
             <span style={{ fontSize: 16, fontWeight: 700, color: T.deep }}>
               {FULL_WD[selDate.getDay()]}, {MONTHS[selDate.getMonth()]} {selDate.getDate()}
             </span>
-            {selected === TODAY && (
+            {selected === today && (
               <span style={{ fontSize: 12, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 9px', borderRadius: 999, letterSpacing: '0.3px' }}>TODAY</span>
             )}
           </div>
