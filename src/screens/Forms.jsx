@@ -37,7 +37,10 @@ function FormBar({ title, onCancel, onSave, canSave }) {
 }
 
 // ── Form A: Calendar item ────────────────────────────────────────────
-const BASE_TYPES = ['Appointment', 'Test', 'Bill'];
+// 'Test' was retired in migration 014 — a test is an appointment, and the
+// title/description carry the specifics. Any non-base type (including a
+// straggler 'Test') still round-trips via the custom-chip path below.
+const BASE_TYPES = ['Appointment', 'Bill'];
 
 export function CalendarForm({ people, contacts = [], initial, onSave, onCancel, onDelete }) {
   const editing = !!initial;
