@@ -39,7 +39,7 @@ function FormBar({ title, onCancel, onSave, canSave }) {
 // ── Form A: Calendar item ────────────────────────────────────────────
 const BASE_TYPES = ['Appointment', 'Test', 'Bill'];
 
-export function CalendarForm({ people, initial, onSave, onCancel, onDelete }) {
+export function CalendarForm({ people, contacts = [], initial, onSave, onCancel, onDelete }) {
   const editing = !!initial;
   const [personId, setPersonId] = React.useState(initial?.personId || people[0]?.id || null);
   const [type, setType] = React.useState(initial?.type || 'Appointment');
@@ -48,12 +48,14 @@ export function CalendarForm({ people, initial, onSave, onCancel, onDelete }) {
   const [title, setTitle] = React.useState(initial?.title || '');
   const [date, setDate] = React.useState(initial?.date || TODAY_ISO);
   const [time, setTime] = React.useState(to24(initial?.time || ''));
+  const [contactId, setContactId] = React.useState(initial?.contactId || null);
   const [description, setDescription] = React.useState(initial?.description || '');
   const [refs, setRefs] = React.useState(initial?.refs?.length ? initial.refs.map(r => ({ ...r })) : []);
 
   const canSave = !!personId && title.trim().length > 0;
   const save = () => onSave({
     id: initial?.id, personId, type, title: title.trim(), date, time: formatTime(time),
+    contactId: contactId || null,
     description: description.trim(), refs: refs.filter(r => r.label.trim() || r.url.trim()),
   });
 
@@ -93,6 +95,15 @@ export function CalendarForm({ people, initial, onSave, onCancel, onDelete }) {
             <Field label="TIME"><input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...inputStyle, paddingRight: 8 }} /></Field>
           </div>
         </div>
+
+        <Field label="DOCTOR (OPTIONAL)" hint="From your Contacts.">
+          <select value={contactId || ''} onChange={(e) => setContactId(e.target.value || null)} style={{ ...inputStyle, paddingRight: 8 }}>
+            <option value="">None</option>
+            {[...contacts].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
+              <option key={c.id} value={c.id}>{c.name}{c.specialty ? ` — ${c.specialty}` : ''}</option>
+            ))}
+          </select>
+        </Field>
 
         <Field label="DESCRIPTION">
           <TextArea value={description} onChange={setDescription} placeholder="Notes, prep instructions, location…" rows={3} />

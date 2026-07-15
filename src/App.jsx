@@ -93,13 +93,14 @@ export default function App({ family, role, onSignOut }) {
   };
   const removeMedById = async (id) => { await deleteMed(id); await reloadMeds(); };
 
-  // contact mutations
+  // contact mutations — items embed a copy of their linked contact, so
+  // contact changes (and deletes → SET NULL) refetch items too
   const saveContact = async (rec) => {
     if (rec.id) await updateContact(rec.id, rec);
     else await createContact(family.id, rec);
-    await reloadContacts();
+    await Promise.all([reloadContacts(), reloadItems()]);
   };
-  const removeContactById = async (id) => { await deleteContact(id); await reloadContacts(); };
+  const removeContactById = async (id) => { await deleteContact(id); await Promise.all([reloadContacts(), reloadItems()]); };
 
   if (people === undefined || items === undefined || meds === undefined || contacts === undefined) return <LoadingScreen label="Loading…" />;
 
@@ -126,7 +127,7 @@ export default function App({ family, role, onSignOut }) {
         onBack={pop} onEdit={() => push({ type: 'calForm', editId: item.id })} />;
     } else if (top.type === 'calForm') {
       const initial = top.editId ? items.find((x) => x.id === top.editId) : null;
-      overlay = <CalendarForm people={people} initial={initial}
+      overlay = <CalendarForm people={people} contacts={contacts} initial={initial}
         onCancel={pop}
         onSave={async (rec) => { try { await saveItem(rec); pop(); } catch (e) { console.error('Save item failed:', e); } }}
         onDelete={async () => { try { await removeItemById(top.editId); closeAll(); } catch (e) { console.error('Delete item failed:', e); } }} />;
