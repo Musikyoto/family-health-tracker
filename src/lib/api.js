@@ -108,15 +108,20 @@ export async function deletePerson(id) {
 
 // ── Items (calendar) ─────────────────────────────────────────────────
 // Map snake_case row ↔ the camelCase shape the UI uses. refs is jsonb both
-// sides (array of { label, url, kind }).
-const ITEM_COLS = 'id, person_id, type, title, date, time, description, refs'
+// sides (array of { label, url, kind }). contact_id optionally links a
+// doctor from contacts — reads embed the contact and route it through
+// contactFromRow, so its phones pass the same phoneFromJson shim.
+const ITEM_COLS = 'id, person_id, type, title, date, time, description, refs, contact_id, contact:contacts(id, name, specialty, phones, now_serving)'
 const itemFromRow = (r) => ({
   id: r.id, personId: r.person_id, type: r.type, title: r.title,
   date: r.date, time: r.time ?? '', description: r.description ?? '', refs: r.refs ?? [],
+  contactId: r.contact_id ?? null,
+  contact: r.contact ? contactFromRow(r.contact) : null,
 })
 const itemFields = (it) => ({
   person_id: it.personId, type: it.type, title: it.title,
   date: it.date, time: it.time, description: it.description, refs: it.refs,
+  contact_id: it.contactId ?? null,
 })
 
 export async function listItems(familyId) {
