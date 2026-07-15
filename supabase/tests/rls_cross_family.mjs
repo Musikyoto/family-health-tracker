@@ -207,6 +207,26 @@ async function main() {
       check("A cannot create a med in family A referencing B's person", !!error,
         error ? '' : 'CROSS-FAMILY person_id was ACCEPTED')
     }
+    // items→contacts link (012): the item's contact must be in the item's
+    // family (check_contact_in_family trigger; RLS alone can't validate what
+    // contact_id points at).
+    {
+      const { data: { id: contactB } } = await B.from('contacts')
+        .insert({ family_id: familyB, name: 'B doctor' }).select('id').single().throwOnError()
+      const { error } = await A.from('items')
+        .insert({ family_id: familyA, person_id: personA, type: 'Appointment', title: 'x-family doctor', date: '2026-07-21', contact_id: contactB })
+        .select()
+      check("A cannot create an item linking B's contact", !!error,
+        error ? '' : 'CROSS-FAMILY contact_id was ACCEPTED')
+      const { error: ue } = await A.from('items')
+        .update({ contact_id: contactB }).eq('id', itemA).select()
+      check("A cannot update its item to link B's contact", !!ue,
+        ue ? '' : 'CROSS-FAMILY contact_id was ACCEPTED on update')
+      const { data: ok, error: okErr } = await A.from('items')
+        .update({ contact_id: contactA }).eq('id', itemA).select()
+      check('A CAN link its own contact to its own item (positive control)', !okErr && ok?.length === 1,
+        okErr ? 'error: ' + okErr.message : (ok?.length !== 1 ? `${ok?.length ?? 0} rows` : ''))
+    }
     // B reassigning its own membership into family A (cross-family injection).
     // Postgres uses USING as the implicit WITH CHECK for UPDATE, so
     // is_editor(new.family_id = A) should reject this.
