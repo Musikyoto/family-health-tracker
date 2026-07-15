@@ -291,7 +291,9 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
         <div style={{ background: T.card, borderRadius: 22, padding: '4px 18px 16px', boxShadow: T.shadowCard }}>
           <Row icon="calendar" label="DATE" value={dateStr} />
           {item.time && <Row icon="clock" label="TIME" value={item.time} />}
-          {item.description && <Row icon="doc" label="DESCRIPTION" value={item.description} />}
+          {/* pre-wrap keeps the user's line breaks; anywhere guards long unbroken strings */}
+          {item.description && <Row icon="doc" label="DESCRIPTION"
+            value={<span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{item.description}</span>} />}
 
           {/* Doctor — only when a contact is linked (items.contact_id) */}
           {item.contact && (
