@@ -41,14 +41,14 @@ function MedRow({ med, person, onClick }) {
       <Avatar person={person} size={38} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 16, fontWeight: 600, color: T.deep }}>{med.name}</span>
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 10px', borderRadius: 999 }}>{med.dose}</span>
+          <span style={{ fontSize: 16, fontWeight: 600, color: T.ink }}>{med.name}</span>
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 8px', borderRadius: 999 }}>{med.dose}</span>
         </div>
-        <div style={{ fontSize: 13, color: T.body, marginTop: 3, fontWeight: 500 }}>
+        <div style={{ fontSize: 12.5, color: T.metaGrey, marginTop: 3, fontWeight: 500 }}>
           {person.name}{note ? ` · ${note}` : ''}
         </div>
       </div>
-      {onClick && <Icon name="chevron" size={16} color={T.muted} strokeWidth={2} />}
+      {onClick && <Icon name="chevron" size={16} color={T.metaGrey} strokeWidth={2} />}
     </div>
   );
 }
@@ -83,9 +83,9 @@ export function MedicationTab({ data, role, onTab, onGear, onAdd, onAddPerson, o
         <div style={{ padding: '4px 16px 0', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <TimeSegments active={time} counts={counts} onSelect={setTime} />
           {activeMeds.length ? (
-            <div style={{ background: T.card, borderRadius: 20, padding: '2px 16px', boxShadow: T.shadowCard }}>
+            <div style={{ background: T.card, borderRadius: 18, padding: '2px 16px', boxShadow: T.shadowSoft }}>
               {activeMeds.map((m, i) => (
-                <div key={m.id} style={{ borderBottom: i < activeMeds.length - 1 ? `1px solid ${T.fieldBorder}` : 'none' }}>
+                <div key={m.id} style={{ borderBottom: i < activeMeds.length - 1 ? `1px solid ${T.hairline}` : 'none' }}>
                   <MedRow med={m} person={peopleById[m.personId]} onClick={role === 'editor' && onOpenMed ? () => onOpenMed(m.id) : undefined} />
                 </div>
               ))}
@@ -95,6 +95,7 @@ export function MedicationTab({ data, role, onTab, onGear, onAdd, onAddPerson, o
               No {time.toLowerCase()} medicines yet.
             </div>
           )}
+          {/* trailing note: same treatment as the Contacts tab's footnote */}
           <div style={{ textAlign: 'center', color: T.muted, fontSize: 13, fontWeight: 500, padding: '4px 0 0' }}>
             A reference list — nothing to check off.
           </div>
