@@ -218,16 +218,16 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
         role === 'editor' ? (
           data.people.length === 0 ? (
             <EmptyBlock icon="users" title="Add your first person"
-              body="Start with the people you're tracking — then you can add their appointments, tests, and bills."
+              body="Start with the people you're tracking — then you can add their appointments and bills."
               action={<PrimaryButton icon="plus" onClick={onAddPerson}>Add a person</PrimaryButton>} />
           ) : (
             <EmptyBlock icon="inbox" title="No appointments yet"
-              body="Add an appointment, test, or bill and it'll show up here on the day."
+              body="Add an appointment or a bill and it'll show up here on the day."
               action={<PrimaryButton icon="plus" onClick={onAdd}>Add item</PrimaryButton>} />
           )
         ) : (
           <EmptyBlock icon="inbox" title="Nothing scheduled yet"
-            body="When appointments or tests are added, they'll appear here. Check back soon." />
+            body="When appointments or bills are added, they'll appear here. Check back soon." />
         )
       ) : selInView ? (
         <div style={{ margin: '22px 16px 0' }}>
