@@ -29,6 +29,7 @@ export const T = {
   rowBg: '#F4F8F4',      // soft tappable row background
   chipOn: '#1D9E75',     // selected toggle-chip fill (white text on top)
   hairline: 'rgba(31,58,49,0.08)', // divider on white cards
+  shadowActive: '0 3px 10px rgba(15,110,86,0.28)', // lift under a tealDeep active/current fill
   segBg: '#DDE7DF',      // segmented-control track (Meds time sub-tabs)
   goldBg: '#FAEEDA',     // schedule chip fill (per-phone clinic schedule)
   goldInk: '#633806',    // schedule chip: clock icon + days text

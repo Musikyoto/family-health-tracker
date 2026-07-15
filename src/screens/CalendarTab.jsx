@@ -40,7 +40,7 @@ function buildWeeks(year, month) {
 // sign-out for viewers (who can't reach Settings).
 const slotBtnStyle = {
   width: 44, height: 44, borderRadius: '50%', border: 'none', cursor: 'pointer', background: '#fff',
-  boxShadow: '0 2px 10px rgba(31,74,64,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0,
+  boxShadow: T.shadowSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0,
 };
 // Tab key (used for routing + active state) is decoupled from the display
 // label, so the medication tab can show "Meds" while staying keyed 'medication'.
@@ -62,7 +62,7 @@ export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, padding: 0,
               background: on ? T.tealDeep : 'transparent', color: on ? '#fff' : T.body,
               fontSize: 11, fontWeight: on ? 700 : 600, letterSpacing: '0.1px',
-              boxShadow: on ? '0 3px 10px rgba(15,110,86,0.28)' : 'none',
+              boxShadow: on ? T.shadowActive : 'none',
               transition: 'background 160ms ease, color 160ms ease',
             }}>
               <Icon name={t.icon} size={16} color={on ? '#fff' : T.body} strokeWidth={1.9} />
@@ -122,10 +122,10 @@ function ItemRow({ item, person, onClick }) {
     }}>
       <Avatar person={person} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: T.deep, lineHeight: 1.25 }}>{item.title}</div>
-        <div style={{ fontSize: 13, color: T.body, marginTop: 3, fontWeight: 500 }}>{meta}</div>
+        <div style={{ fontSize: 16, fontWeight: 600, color: T.ink, lineHeight: 1.25 }}>{item.title}</div>
+        <div style={{ fontSize: 12.5, color: T.metaGrey, marginTop: 3, fontWeight: 500 }}>{meta}</div>
       </div>
-      <Icon name="chevron" size={16} color={T.muted} strokeWidth={2} />
+      <Icon name="chevron" size={16} color={T.metaGrey} strokeWidth={2} />
     </div>
   );
 }
@@ -160,16 +160,16 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
       <TabHeader active="calendar" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} />
 
       {/* Calendar card */}
-      <div style={{ background: T.card, borderRadius: 26, margin: '0 16px', padding: '20px 16px 18px', boxShadow: T.shadowCard }}>
+      <div style={{ background: T.card, borderRadius: 18, margin: '0 16px', padding: '20px 16px 18px', boxShadow: T.shadowSoft }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px 14px' }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: T.deep, letterSpacing: '0.1px' }}>{MONTHS[vm]} {vy}</div>
+          <div style={{ fontSize: 17, fontWeight: 600, color: T.ink, letterSpacing: '0.1px' }}>{MONTHS[vm]} {vy}</div>
           <div style={{ display: 'flex', gap: 6 }}>
             {[-1, 1].map((d) => (
               <button key={d} onClick={() => shiftMonth(d)} style={{
-                width: 32, height: 32, borderRadius: 10, border: 'none', cursor: 'pointer', background: T.fieldBg,
+                width: 32, height: 32, borderRadius: 10, border: 'none', cursor: 'pointer', background: T.rowBg,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
               }}>
-                <Icon name={d < 0 ? 'back' : 'chevron'} size={16} color={T.body} strokeWidth={2.2} />
+                <Icon name={d < 0 ? 'back' : 'chevron'} size={16} color={T.tealDeep} strokeWidth={2.2} />
               </button>
             ))}
           </div>
@@ -177,7 +177,7 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
 
         <div style={{ display: 'flex', marginBottom: 4 }}>
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w, i) => (
-            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 12, fontWeight: 600, color: T.muted, letterSpacing: '0.5px' }}>{w}</div>
+            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 12, fontWeight: 600, color: T.metaGrey, letterSpacing: '0.5px' }}>{w}</div>
           ))}
         </div>
 
@@ -189,11 +189,12 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
               const isToday = iso === today;
               const isSel = iso && iso === selected && !isToday;
               const tappable = isToday || has;
-              let numColor = T.muted, weight = 400, circle = {};
+              let numColor = T.metaGrey, weight = 400, circle = {};
               if (!cell.inMonth) { numColor = T.faint; }
-              else if (isToday) { numColor = '#fff'; weight = 700; circle = { background: T.accent, boxShadow: '0 4px 12px rgba(31,169,160,0.35)' }; }
-              else if (isSel) { numColor = T.deep; weight = 700; circle = { background: T.selFill }; }
-              else if (has) { numColor = T.deep; weight = 600; }
+              // today = the same tealDeep-fill + soft lift the header's active tab uses
+              else if (isToday) { numColor = '#fff'; weight = 700; circle = { background: T.tealDeep, boxShadow: T.shadowActive }; }
+              else if (isSel) { numColor = T.ink; weight = 700; circle = { background: T.selFill }; }
+              else if (has) { numColor = T.ink; weight = 600; }
               return (
                 <div key={ci} onClick={tappable ? () => setSelected(iso) : undefined}
                   style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 4, cursor: tappable ? 'pointer' : 'default', userSelect: 'none' }}>
@@ -202,7 +203,8 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
                     fontSize: 17, fontWeight: weight, color: numColor, fontVariantNumeric: 'tabular-nums', transition: 'background 140ms ease', ...circle,
                   }}>{cell.day}</div>
                   <div style={{ height: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
-                    {has && <div style={{ width: 6, height: 6, borderRadius: '50%', background: isToday ? 'rgba(255,255,255,0.92)' : T.red }} />}
+                    {/* one ink-green dot per day with items, whatever the count */}
+                    {has && <div style={{ width: 6, height: 6, borderRadius: '50%', background: isToday ? 'rgba(255,255,255,0.92)' : T.tealDeep }} />}
                   </div>
                 </div>
               );
@@ -230,22 +232,23 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
       ) : selInView ? (
         <div style={{ margin: '22px 16px 0' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 2px 12px' }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: T.deep }}>
+            <span style={{ fontSize: 16, fontWeight: 600, color: T.ink }}>
               {FULL_WD[selDate.getDay()]}, {MONTHS[selDate.getMonth()]} {selDate.getDate()}
             </span>
             {selected === today && (
-              <span style={{ fontSize: 12, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 9px', borderRadius: 999, letterSpacing: '0.3px' }}>TODAY</span>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 8px', borderRadius: 999, letterSpacing: '0.3px' }}>TODAY</span>
             )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {selItems.length ? selItems.map((it) => (
               <ItemRow key={it.id} item={it} person={peopleById[it.personId]} onClick={() => onOpenItem(it.id)} />
             )) : (
-              <div style={{ background: T.card, borderRadius: 18, padding: '26px 16px', textAlign: 'center', boxShadow: T.shadowSoft, color: T.body, fontSize: 15, fontWeight: 500 }}>Nothing scheduled</div>
+              <div style={{ background: T.card, borderRadius: 18, padding: '26px 16px', textAlign: 'center', boxShadow: T.shadowSoft, color: T.metaGrey, fontSize: 15, fontWeight: 500 }}>Nothing scheduled</div>
             )}
           </div>
         </div>
       ) : (
+        // hint line outside a card: T.muted, same as the Contacts footnote
         <div style={{ margin: '26px 16px 0', textAlign: 'center', color: T.muted, fontSize: 14.5, fontWeight: 500 }}>
           Tap a day to see what's on.
         </div>
@@ -260,11 +263,11 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
 // ── Item detail (deep-dive) — SPEC §7 ────────────────────────────────
 export function ItemDetail({ item, person, role, onBack, onEdit }) {
   const Row = ({ icon, label, value }) => (
-    <div style={{ display: 'flex', gap: 13, padding: '14px 0', borderBottom: `1px solid ${T.fieldBorder}` }}>
-      <Icon name={icon} size={20} color={T.accentSolid} strokeWidth={1.8} style={{ marginTop: 1, flexShrink: 0 }} />
+    <div style={{ display: 'flex', gap: 13, padding: '14px 0', borderBottom: `1px solid ${T.hairline}` }}>
+      <Icon name={icon} size={20} color={T.tealDeep} strokeWidth={1.8} style={{ marginTop: 1, flexShrink: 0 }} />
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted, letterSpacing: '0.3px', marginBottom: 3 }}>{label}</div>
-        <div style={{ fontSize: 16, fontWeight: 500, color: T.deep, lineHeight: 1.45 }}>{value}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: T.metaGrey, letterSpacing: '0.3px', marginBottom: 3 }}>{label}</div>
+        <div style={{ fontSize: 16, fontWeight: 500, color: T.ink, lineHeight: 1.45 }}>{value}</div>
       </div>
     </div>
   );
@@ -283,15 +286,15 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
           <Avatar person={person} size={54} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 23, fontWeight: 700, color: T.deep, lineHeight: 1.2, letterSpacing: '0.1px' }}>{item.title}</div>
+            <div style={{ fontSize: 23, fontWeight: 700, color: T.ink, lineHeight: 1.2, letterSpacing: '0.1px' }}>{item.title}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5 }}>
-              <span style={{ fontSize: 13.5, fontWeight: 600, color: T.body }}>{person.name}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.body, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, padding: '2px 9px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.4px' }}>{item.type}</span>
+              <span style={{ fontSize: 13.5, fontWeight: 600, color: T.metaGrey }}>{person.name}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.metaGrey, background: T.rowBg, padding: '2px 9px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.4px' }}>{item.type}</span>
             </div>
           </div>
         </div>
 
-        <div style={{ background: T.card, borderRadius: 22, padding: '4px 18px 16px', boxShadow: T.shadowCard }}>
+        <div style={{ background: T.card, borderRadius: 18, padding: '4px 18px 16px', boxShadow: T.shadowSoft }}>
           <Row icon="calendar" label="DATE" value={dateStr} />
           {item.time && <Row icon="clock" label="TIME" value={item.time} />}
           {/* pre-wrap keeps the user's line breaks; anywhere guards long unbroken strings */}
@@ -300,8 +303,8 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
 
           {/* Doctor — only when a contact is linked (items.contact_id) */}
           {item.contact && (
-            <div style={{ padding: '16px 0 14px', borderBottom: `1px solid ${T.fieldBorder}` }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted, letterSpacing: '0.3px', marginBottom: 8 }}>DOCTOR</div>
+            <div style={{ padding: '16px 0 14px', borderBottom: `1px solid ${T.hairline}` }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: T.metaGrey, letterSpacing: '0.3px', marginBottom: 8 }}>DOCTOR</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: item.contact.phones?.length ? 10 : 0 }}>
                 <span style={{ fontSize: 16, fontWeight: 600, color: T.ink }}>{item.contact.name}</span>
                 {item.contact.specialty && (
@@ -315,7 +318,7 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
 
           {/* References */}
           <div style={{ paddingTop: 16 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted, letterSpacing: '0.3px', marginBottom: 10 }}>REFERENCES &amp; DOCUMENTS</div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: T.metaGrey, letterSpacing: '0.3px', marginBottom: 10 }}>REFERENCES &amp; DOCUMENTS</div>
             {item.refs && item.refs.length ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
                 {item.refs.map((r, i) => {
@@ -323,16 +326,16 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
                   const Tag = href ? 'a' : 'div';
                   return (
                     <Tag key={i} {...(href ? { href, target: '_blank', rel: 'noopener noreferrer' } : {})}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 13px', borderRadius: 14, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, cursor: href ? 'pointer' : 'default', textDecoration: 'none', color: 'inherit' }}>
-                      <Icon name={r.kind === 'image' ? 'image' : 'doc'} size={20} color={T.accentSolid} strokeWidth={1.8} />
-                      <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.deep }}>{r.label || href}</span>
-                      {href && <Icon name="link" size={17} color={T.muted} strokeWidth={1.8} />}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 13px', borderRadius: 12, background: T.rowBg, cursor: href ? 'pointer' : 'default', textDecoration: 'none', color: 'inherit' }}>
+                      <Icon name={r.kind === 'image' ? 'image' : 'doc'} size={20} color={T.tealDeep} strokeWidth={1.8} />
+                      <span style={{ flex: 1, fontSize: 15, fontWeight: 500, color: T.inkSoft }}>{r.label || href}</span>
+                      {href && <Icon name="link" size={17} color={T.metaGrey} strokeWidth={1.8} />}
                     </Tag>
                   );
                 })}
               </div>
             ) : (
-              <div style={{ fontSize: 14, color: T.muted, fontWeight: 500, padding: '4px 0' }}>No links added.</div>
+              <div style={{ fontSize: 14, color: T.metaGrey, fontWeight: 500, padding: '4px 0' }}>No links added.</div>
             )}
           </div>
         </div>
