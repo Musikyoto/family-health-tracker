@@ -59,7 +59,9 @@ export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
       display: 'flex', alignItems: 'center', gap: 8,
       padding: `${safeArea.top(60)} 16px 16px`,
       position: 'sticky', top: 0, zIndex: 20,
-      background: 'linear-gradient(180deg, #E6F2EC 72%, rgba(230,242,236,0) 100%)',
+      // opaque past the tab pill's bottom edge, then a short fade — otherwise
+      // scrolled content shows through beside the pill
+      background: 'linear-gradient(180deg, #E6F2EC 86%, rgba(230,242,236,0) 100%)',
     }}>
       <img src="/mamori-mark.svg" alt="Mamori" width={54} height={54} style={{ flexShrink: 0 }} />
       <div style={{ flex: 1, display: 'flex', gap: 4, padding: 4, background: '#fff', borderRadius: 15, boxShadow: T.shadowSoft }}>
