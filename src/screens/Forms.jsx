@@ -24,11 +24,11 @@ function to24(display) {
 
 function FormBar({ title, onCancel, onSave, canSave }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '58px 16px 12px', position: 'sticky', top: 0, zIndex: 20, background: 'linear-gradient(180deg, #E6F2EC 60%, rgba(230,242,236,0) 100%)' }}>
-      <button onClick={onCancel} style={{ border: 'none', background: 'transparent', color: T.body, fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: '8px 4px' }}>Cancel</button>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `${safeArea.top(58, 14)} 16px 12px`, position: 'sticky', top: 0, zIndex: 20, background: 'linear-gradient(180deg, #E6F2EC 60%, rgba(230,242,236,0) 100%)' }}>
+      <button onClick={onCancel} className="tap" style={{ border: 'none', background: 'transparent', color: T.body, fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: '8px 4px', minHeight: 44 }}>Cancel</button>
       <span style={{ fontSize: 16, fontWeight: 700, color: T.deep }}>{title}</span>
-      <button onClick={canSave ? onSave : undefined} style={{
-        border: 'none', borderRadius: 999, padding: '9px 18px', cursor: canSave ? 'pointer' : 'default', fontFamily: 'inherit',
+      <button onClick={canSave ? onSave : undefined} className="tap" style={{
+        border: 'none', borderRadius: 999, padding: '9px 18px', minHeight: 44, cursor: canSave ? 'pointer' : 'default', fontFamily: 'inherit',
         background: canSave ? T.accent : T.fieldBg, color: canSave ? '#fff' : T.muted, fontSize: 15, fontWeight: 700,
         boxShadow: canSave ? '0 4px 12px rgba(31,169,160,0.30)' : 'none',
       }}>Save</button>

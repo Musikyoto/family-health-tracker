@@ -12,6 +12,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Mamori" />
     <title>Mamori</title>
+    <style>
+      /* Pressed feedback for primary touch surfaces. Inline styles can't
+         express :active, and this keeps it to one rule instead of pointer
+         state in every component. */
+      .tap { -webkit-tap-highlight-color: transparent; transition: opacity 120ms ease, transform 120ms ease; }
+      .tap:active { opacity: 0.72; transform: scale(0.97); }
+    </style>
   </head>
   <body>
     <div id="root"></div>

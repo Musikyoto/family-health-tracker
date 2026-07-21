@@ -1,0 +1,21 @@
+-- =============================================================
+-- To-do: allow items with no date yet (unscheduled appointments).
+-- Apply via: Supabase dashboard → SQL Editor → Run
+-- =============================================================
+--
+-- A null items.date means "needs booking, not scheduled yet" — the row
+-- shows in the To-do tab instead of the Calendar. Setting a date moves
+-- it to the Calendar; clearing one moves it back. No new table: a to-do
+-- IS an appointment, just without a date.
+--
+-- Fully backward-compatible and safe to run before any code ships: the
+-- currently deployed app always writes a date, so no existing row or
+-- write path produces null. Dropping NOT NULL only widens what's
+-- accepted; it invalidates nothing already stored.
+--
+-- RLS and both integrity triggers are unaffected: the items policies
+-- gate rows by family_id, and check_person_in_family (005) /
+-- check_contact_in_family (012) read person_id and contact_id only —
+-- neither inspects date.
+
+alter table public.items alter column date drop not null;

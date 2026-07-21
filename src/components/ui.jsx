@@ -1,5 +1,5 @@
 // Shared UI primitives. Converted from the design export to ES modules.
-import { T, PALETTE } from '../lib/theme.js';
+import { T, PALETTE, safeArea } from '../lib/theme.js';
 import { Icon } from './Icon.jsx';
 
 // ── Avatar ───────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ export function Avatar({ person, size = 38 }) {
 // ── Buttons ──────────────────────────────────────────────────────────
 export function PrimaryButton({ children, onClick, full = true, icon, style, disabled = false }) {
   return (
-    <button onClick={disabled ? undefined : onClick} disabled={disabled} style={{
+    <button onClick={disabled ? undefined : onClick} disabled={disabled} className={disabled ? undefined : 'tap'} style={{
       width: full ? '100%' : undefined, height: 52, borderRadius: 16, border: 'none',
       background: disabled ? T.fieldBg : T.accent, color: disabled ? T.muted : '#fff',
       fontSize: 17, fontWeight: 700, cursor: disabled ? 'default' : 'pointer',
@@ -32,7 +32,7 @@ export function PrimaryButton({ children, onClick, full = true, icon, style, dis
 
 export function GhostButton({ children, onClick, danger, style }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} className="tap" style={{
       width: '100%', height: 50, borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit',
       background: danger ? T.redTint : T.fieldBg, color: danger ? T.red : T.body,
       border: `1px solid ${danger ? 'rgba(226,84,47,0.25)' : T.fieldBorder}`,
@@ -55,10 +55,10 @@ export function TopBar({ title, onBack, trailing, closeIcon = false }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
-      padding: '60px 14px 10px', position: 'sticky', top: 0, zIndex: 20,
+      padding: `${safeArea.top(60)} 14px 10px`, position: 'sticky', top: 0, zIndex: 20,
     }}>
-      <button onClick={onBack} aria-label="Back" style={{
-        width: 42, height: 42, borderRadius: '50%', border: 'none', cursor: 'pointer',
+      <button onClick={onBack} aria-label="Back" className="tap" style={{
+        width: 44, height: 44, borderRadius: '50%', border: 'none', cursor: 'pointer',
         background: '#fff', boxShadow: T.shadowSoft, display: 'flex', alignItems: 'center',
         justifyContent: 'center', flexShrink: 0, padding: 0,
       }}>
