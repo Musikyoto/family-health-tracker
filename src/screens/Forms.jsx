@@ -49,7 +49,10 @@ export function CalendarForm({ people, contacts = [], initial, onSave, onCancel,
   const [customType, setCustomType] = React.useState(BASE_TYPES.includes(initial?.type) ? '' : (initial?.type || ''));
   const [showCustom, setShowCustom] = React.useState(false);
   const [title, setTitle] = React.useState(initial?.title || '');
-  const [date, setDate] = React.useState(() => initial?.date || todayIso()); // computed at form open
+  // A new item defaults to today; an existing one keeps its own date — and a
+  // null date (a To-do) must stay empty. `??` not `||`, or opening a To-do in
+  // the edit form would silently prefill today and schedule it on save.
+  const [date, setDate] = React.useState(() => (initial ? (initial.date ?? '') : todayIso()));
   const [time, setTime] = React.useState(to24(initial?.time || ''));
   const [contactId, setContactId] = React.useState(initial?.contactId || null);
   const [description, setDescription] = React.useState(initial?.description || '');
@@ -57,7 +60,9 @@ export function CalendarForm({ people, contacts = [], initial, onSave, onCancel,
 
   const canSave = !!personId && title.trim().length > 0;
   const save = () => onSave({
-    id: initial?.id, personId, type, title: title.trim(), date, time: formatTime(time),
+    id: initial?.id, personId, type, title: title.trim(),
+    date: date || null, // cleared date => null => the item moves to To-do
+    time: formatTime(time),
     contactId: contactId || null,
     description: description.trim(), refs: refs.filter(r => r.label.trim() || r.url.trim()),
   });

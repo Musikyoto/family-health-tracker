@@ -149,11 +149,15 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
   const [selected, setSelected] = React.useState(() => todayIso());
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
 
+  // Undated items live in the To-do tab — they must not reach the grid, the
+  // dots, the day lists, or the empty-state check (a family with only to-dos
+  // would otherwise see an empty day list instead of the empty state).
+  const datedItems = data.items.filter((it) => it.date);
   const itemsByDate = {};
-  data.items.forEach((it) => { (itemsByDate[it.date] = itemsByDate[it.date] || []).push(it); });
+  datedItems.forEach((it) => { (itemsByDate[it.date] = itemsByDate[it.date] || []).push(it); });
 
   const weeks = buildWeeks(vy, vm);
-  const noItems = data.items.length === 0;
+  const noItems = datedItems.length === 0;
   const selInView = selected && selected.startsWith(isoOf(vy, vm, 1).slice(0, 7));
   const selItems = (selected && itemsByDate[selected]) || [];
   const selDate = selected ? new Date(selected + 'T00:00:00') : null;
@@ -280,8 +284,11 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
       </div>
     </div>
   );
-  const dateObj = new Date(item.date + 'T00:00:00');
-  const dateStr = `${FULL_WD[dateObj.getDay()]}, ${MONTHS[dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
+  // An undated item is a To-do; say so rather than rendering an Invalid Date.
+  const dateObj = item.date ? new Date(item.date + 'T00:00:00') : null;
+  const dateStr = dateObj
+    ? `${FULL_WD[dateObj.getDay()]}, ${MONTHS[dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`
+    : null;
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(40) }}>
@@ -304,7 +311,8 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
         </div>
 
         <div style={{ background: T.card, borderRadius: 18, padding: '4px 18px 16px', boxShadow: T.shadowSoft }}>
-          <Row icon="calendar" label="DATE" value={dateStr} />
+          <Row icon="calendar" label="DATE" value={dateStr
+            || <span style={{ color: T.metaGrey }}>Not scheduled yet</span>} />
           {item.time && <Row icon="clock" label="TIME" value={item.time} />}
           {/* pre-wrap keeps the user's line breaks; anywhere guards long unbroken strings */}
           {item.description && <Row icon="doc" label="DESCRIPTION"

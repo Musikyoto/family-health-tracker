@@ -122,7 +122,9 @@ const itemFromRow = (r) => ({
 })
 const itemFields = (it) => ({
   person_id: it.personId, type: it.type, title: it.title,
-  date: it.date, time: it.time, description: it.description, refs: it.refs,
+  // guard the column boundary: '' is not a valid date, null is "not scheduled"
+  date: it.date || null,
+  time: it.time, description: it.description, refs: it.refs,
   contact_id: it.contactId ?? null,
 })
 
