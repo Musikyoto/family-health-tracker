@@ -8,6 +8,7 @@ import {
 import { CalendarTab, ItemDetail } from './screens/CalendarTab.jsx';
 import { MedicationTab } from './screens/MedicationTab.jsx';
 import { ContactsTab } from './screens/ContactsTab.jsx';
+import { TodoTab } from './screens/TodoTab.jsx';
 import { CalendarForm, MedForm, ContactForm } from './screens/Forms.jsx';
 import { SettingsHome, PeopleList, PersonForm, DeletePersonDialog, SignOutDialog } from './screens/Settings.jsx';
 import { InviteScreen } from './screens/InviteScreen.jsx';
@@ -115,7 +116,8 @@ export default function App({ family, role, onSignOut }) {
     meds: meds.filter((m) => peopleById[m.personId]),
   };
 
-  const onAdd = () => push({ type: tab === 'calendar' ? 'calForm' : tab === 'medication' ? 'medForm' : 'contactForm' });
+  const ADD_FORM = { calendar: 'calForm', medication: 'medForm', contacts: 'contactForm', todo: 'todoForm' };
+  const onAdd = () => push({ type: ADD_FORM[tab] });
   const onGear = () => push({ type: 'settings' });
 
   // overlay
@@ -131,6 +133,12 @@ export default function App({ family, role, onSignOut }) {
         onCancel={pop}
         onSave={async (rec) => { try { await saveItem(rec); pop(); } catch (e) { console.error('Save item failed:', e); } }}
         onDelete={async () => { try { await removeItemById(top.editId); closeAll(); } catch (e) { console.error('Delete item failed:', e); } }} />;
+    } else if (top.type === 'todoForm') {
+      // creation only — a to-do is an undated Appointment; editing one opens
+      // the full calForm above, where adding a date schedules it.
+      overlay = <CalendarForm people={people} contacts={contacts} todo
+        onCancel={pop}
+        onSave={async (rec) => { try { await saveItem({ ...rec, type: 'Appointment', date: null }); pop(); } catch (e) { console.error('Save to-do failed:', e); } }} />;
     } else if (top.type === 'medForm') {
       const initial = top.editId ? meds.find((x) => x.id === top.editId) : null;
       overlay = <MedForm people={people} initial={initial}
@@ -171,6 +179,9 @@ export default function App({ family, role, onSignOut }) {
   } else if (tab === 'medication') {
     tabScreen = <MedicationTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
       onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={requestSignOut} />;
+  } else if (tab === 'todo') {
+    tabScreen = <TodoTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+      onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />;
   } else {
     tabScreen = <ContactsTab contacts={contacts} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
       onOpenContact={(id) => push({ type: 'contactForm', editId: id })} onSignOut={requestSignOut} />;

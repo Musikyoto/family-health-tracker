@@ -121,20 +121,21 @@ export function FAB({ onClick }) {
   );
 }
 
-function ItemRow({ item, person, onClick }) {
+// `sub` overrides the default meta line (the To-do tab passes its own).
+export function ItemRow({ item, person, onClick, sub }) {
   const meta = [person.name, item.type === 'Bill' ? 'Bill' : item.time, item.type === 'Bill' && !item.time ? 'due today' : null]
     .filter(Boolean).join(' · ');
   return (
-    <div onClick={onClick} style={{
+    <div onClick={onClick} className="tap" style={{
       background: T.card, borderRadius: 18, padding: '13px 14px', display: 'flex', alignItems: 'center', gap: 13,
-      boxShadow: T.shadowSoft, cursor: 'pointer',
+      minHeight: 44, boxShadow: T.shadowSoft, cursor: 'pointer',
     }}>
       <Avatar person={person} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: T.ink, lineHeight: 1.25 }}>{item.title}</div>
-        <div style={{ fontSize: 12.5, color: T.metaGrey, marginTop: 3, fontWeight: 500 }}>{meta}</div>
+        <div style={{ fontSize: 12.5, color: T.metaGrey, marginTop: 3, fontWeight: 500, minWidth: 0 }}>{sub ?? meta}</div>
       </div>
-      <Icon name="chevron" size={16} color={T.metaGrey} strokeWidth={2} />
+      <Icon name="chevron" size={16} color={T.metaGrey} strokeWidth={2} style={{ flexShrink: 0 }} />
     </div>
   );
 }

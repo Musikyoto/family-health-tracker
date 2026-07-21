@@ -42,7 +42,10 @@ function FormBar({ title, onCancel, onSave, canSave }) {
 // straggler 'Test') still round-trips via the custom-chip path below.
 const BASE_TYPES = ['Appointment', 'Bill'];
 
-export function CalendarForm({ people, contacts = [], initial, onSave, onCancel, onDelete }) {
+// `todo` renders the creation variant used by the To-do tab: no date/time and
+// no type chips (an unbooked item is always an Appointment). Editing always
+// uses the full form, so a to-do can be scheduled by picking a date.
+export function CalendarForm({ people, contacts = [], initial, todo = false, onSave, onCancel, onDelete }) {
   const editing = !!initial;
   const [personId, setPersonId] = React.useState(initial?.personId || people[0]?.id || null);
   const [type, setType] = React.useState(initial?.type || 'Appointment');
@@ -71,13 +74,13 @@ export function CalendarForm({ people, contacts = [], initial, onSave, onCancel,
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(50) }}>
-      <FormBar title={editing ? 'Edit item' : 'New item'} onCancel={onCancel} onSave={save} canSave={canSave} />
+      <FormBar title={editing ? 'Edit item' : (todo ? 'New to-do' : 'New item')} onCancel={onCancel} onSave={save} canSave={canSave} />
       <div style={{ padding: '8px 16px 0' }}>
         <Field label="WHO IS IT FOR">
           <PersonPicker people={people} value={personId} onChange={setPersonId} />
         </Field>
 
-        <Field label="TYPE">
+        {!todo && <Field label="TYPE">
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {allTypes.map((t) => <Pill key={t} label={t} active={type === t} onClick={() => setType(t)} />)}
             <Pill label="Custom" icon="plus" active={false} onClick={() => setShowCustom((s) => !s)} />
@@ -89,20 +92,29 @@ export function CalendarForm({ people, contacts = [], initial, onSave, onCancel,
                 style={{ border: 'none', borderRadius: 14, padding: '0 18px', background: T.accent, color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15 }}>Add</button>
             </div>
           )}
-        </Field>
+        </Field>}
 
         <Field label="TITLE">
           <TextInput value={title} onChange={setTitle} placeholder="e.g. Cardiology review" />
         </Field>
 
-        <div style={{ display: 'flex', gap: 12 }}>
-          <div style={{ flex: 1 }}>
-            <Field label="DATE"><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...inputStyle, paddingRight: 8 }} /></Field>
-          </div>
-          <div style={{ flex: 1 }}>
-            <Field label="TIME"><input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...inputStyle, paddingRight: 8 }} /></Field>
-          </div>
-        </div>
+        {!todo && (
+          <>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="DATE"><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...inputStyle, paddingRight: 8 }} /></Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="TIME"><input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...inputStyle, paddingRight: 8 }} /></Field>
+              </div>
+            </div>
+            {editing && !date && (
+              <div style={{ fontSize: 13, color: T.tealDeep, fontWeight: 500, margin: '-6px 2px 16px' }}>
+                Pick a date to move this to the Calendar.
+              </div>
+            )}
+          </>
+        )}
 
         <Field label="DOCTOR (OPTIONAL)" hint="From your Contacts.">
           <select value={contactId || ''} onChange={(e) => setContactId(e.target.value || null)} style={{ ...inputStyle, paddingRight: 8 }}>
