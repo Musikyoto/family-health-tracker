@@ -1,6 +1,6 @@
 // Calendar tab + Item detail — SPEC §6, §7. Converted from the design export.
 import React from 'react';
-import { T } from '../lib/theme.js';
+import { T, safeArea } from '../lib/theme.js';
 import { todayIso } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Avatar, PrimaryButton, TopBar } from '../components/ui.jsx';
@@ -48,20 +48,29 @@ const TABS = [
   { key: 'calendar', label: 'Calendar', icon: 'calendar' },
   { key: 'medication', label: 'Meds', icon: 'pill' },
   { key: 'contacts', label: 'Contacts', icon: 'stethoscope' },
+  { key: 'todo', label: 'To-do', icon: 'checklist' },
 ];
+// Sticky so the tabs stay reachable at any scroll depth (same idiom as
+// FormBar/TopBar: gradient fade, zIndex 20 — below the zIndex-60 overlays).
+// Four tabs need the width three didn't: outer gaps 12->8 and labels 11->10.5.
 export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '60px 16px 16px' }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 8,
+      padding: `${safeArea.top(60)} 16px 16px`,
+      position: 'sticky', top: 0, zIndex: 20,
+      background: 'linear-gradient(180deg, #E6F2EC 72%, rgba(230,242,236,0) 100%)',
+    }}>
       <img src="/mamori-mark.svg" alt="Mamori" width={54} height={54} style={{ flexShrink: 0 }} />
       <div style={{ flex: 1, display: 'flex', gap: 4, padding: 4, background: '#fff', borderRadius: 15, boxShadow: T.shadowSoft }}>
         {TABS.map((t) => {
           const on = active === t.key;
           return (
-            <button key={t.key} onClick={() => onTab(t.key)} style={{
+            <button key={t.key} className="tap" onClick={() => onTab(t.key)} style={{
               flex: 1, height: 46, borderRadius: 11, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, padding: 0,
               background: on ? T.tealDeep : 'transparent', color: on ? '#fff' : T.body,
-              fontSize: 11, fontWeight: on ? 700 : 600, letterSpacing: '0.1px',
+              fontSize: 10.5, fontWeight: on ? 700 : 600, letterSpacing: '0.1px',
               boxShadow: on ? T.shadowActive : 'none',
               transition: 'background 160ms ease, color 160ms ease',
             }}>
@@ -102,8 +111,8 @@ export function EmptyBlock({ icon, title, body, action }) {
 
 export function FAB({ onClick }) {
   return (
-    <button onClick={onClick} aria-label="Add item" style={{
-      position: 'absolute', right: 20, bottom: 30, width: 58, height: 58, borderRadius: '50%', border: 'none',
+    <button onClick={onClick} aria-label="Add item" className="tap" style={{
+      position: 'absolute', right: 20, bottom: safeArea.bottom(30), width: 58, height: 58, borderRadius: '50%', border: 'none',
       cursor: 'pointer', background: T.accent, color: '#fff', boxShadow: '0 8px 22px rgba(31,169,160,0.40)', zIndex: 40,
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
     }}>
@@ -156,7 +165,7 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
   };
 
   return (
-    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 120 }}>
+    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(120) }}>
       <TabHeader active="calendar" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} />
 
       {/* Calendar card */}
@@ -275,7 +284,7 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
   const dateStr = `${FULL_WD[dateObj.getDay()]}, ${MONTHS[dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
 
   return (
-    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 40 }}>
+    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(40) }}>
       <TopBar title="" onBack={onBack}
         trailing={role === 'editor' && (
           <button onClick={onEdit} style={{ height: 42, padding: '0 18px', borderRadius: 999, border: 'none', cursor: 'pointer', background: '#fff', boxShadow: T.shadowSoft, color: T.accentSolid, fontWeight: 700, fontSize: 15, fontFamily: 'inherit' }}>Edit</button>

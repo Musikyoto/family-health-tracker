@@ -111,11 +111,13 @@ export async function deletePerson(id) {
 // sides (array of { label, url, kind }). contact_id optionally links a
 // doctor from contacts — reads embed the contact and route it through
 // contactFromRow, so its phones pass the same phoneFromJson shim.
-const ITEM_COLS = 'id, person_id, type, title, date, time, description, refs, contact_id, contact:contacts(id, name, specialty, phones, now_serving)'
+// created_at rides along so the To-do tab can surface the longest-waiting
+// unscheduled item first; date is nullable (015) = "not scheduled yet".
+const ITEM_COLS = 'id, person_id, type, title, date, time, description, refs, contact_id, created_at, contact:contacts(id, name, specialty, phones, now_serving)'
 const itemFromRow = (r) => ({
   id: r.id, personId: r.person_id, type: r.type, title: r.title,
-  date: r.date, time: r.time ?? '', description: r.description ?? '', refs: r.refs ?? [],
-  contactId: r.contact_id ?? null,
+  date: r.date ?? null, time: r.time ?? '', description: r.description ?? '', refs: r.refs ?? [],
+  contactId: r.contact_id ?? null, createdAt: r.created_at,
   contact: r.contact ? contactFromRow(r.contact) : null,
 })
 const itemFields = (it) => ({

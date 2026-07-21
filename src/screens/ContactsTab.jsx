@@ -2,7 +2,7 @@
 // clinics). Not person-linked. Numbers are tap-to-call (tel:).
 // The badge + phone-row components live in components/ContactPhones.jsx,
 // shared with the item detail's doctor block.
-import { T } from '../lib/theme.js';
+import { T, safeArea } from '../lib/theme.js';
 import { PrimaryButton } from '../components/ui.jsx';
 import { NowServingBadge, ContactPhoneList } from '../components/ContactPhones.jsx';
 import { TabHeader, EmptyBlock, FAB } from './CalendarTab.jsx';
@@ -45,7 +45,7 @@ function ContactCard({ contact, onClick }) {
 export function ContactsTab({ contacts, role, onTab, onGear, onAdd, onOpenContact, onSignOut }) {
   const noContacts = contacts.length === 0;
   return (
-    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 120 }}>
+    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(120) }}>
       <TabHeader active="contacts" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} />
 
       {noContacts ? (

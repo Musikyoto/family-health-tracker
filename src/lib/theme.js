@@ -36,6 +36,14 @@ export const T = {
   goldSoft: '#854F0B',   // schedule chip: hours text
 };
 
+// Safe-area helpers for the installed PWA (index.html sets viewport-fit=cover).
+// Each takes the value the app already used and only grows it when the device
+// reports an inset — so in a browser, where insets are 0, layout is unchanged.
+export const safeArea = {
+  top: (base, extra = 16) => `max(${base}px, calc(env(safe-area-inset-top, 0px) + ${extra}px))`,
+  bottom: (base, extra = 16) => `max(${base}px, calc(env(safe-area-inset-bottom, 0px) + ${extra}px))`,
+};
+
 // Person identity colors (independent of theme). Presets per SPEC §13.
 export const PALETTE = {
   amber:    { bg: '#FBE6C0', fg: '#7A4E08', dot: '#E0A437' },

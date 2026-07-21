@@ -1,7 +1,7 @@
 // Add/Edit forms — Calendar item (Form A) + Medication (Form B). SPEC §9.
 // Converted from the design export to ES modules.
 import React from 'react';
-import { T, FOOD_LABEL } from '../lib/theme.js';
+import { T, FOOD_LABEL, safeArea } from '../lib/theme.js';
 import { todayIso, DAYS, sortDays } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Field, TextInput, TextArea, Pill, PersonPicker, GhostButton, inputStyle } from '../components/ui.jsx';
@@ -65,7 +65,7 @@ export function CalendarForm({ people, contacts = [], initial, onSave, onCancel,
   const allTypes = [...BASE_TYPES, ...(customType && !BASE_TYPES.includes(customType) ? [customType] : [])];
 
   return (
-    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 50 }}>
+    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(50) }}>
       <FormBar title={editing ? 'Edit item' : 'New item'} onCancel={onCancel} onSave={save} canSave={canSave} />
       <div style={{ padding: '8px 16px 0' }}>
         <Field label="WHO IS IT FOR">
@@ -154,7 +154,7 @@ export function MedForm({ people, initial, onSave, onCancel, onDelete }) {
   const save = () => onSave({ id: initial?.id, personId, name: name.trim(), dose: dose.trim(), times, food, note: note.trim() });
 
   return (
-    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 50 }}>
+    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(50) }}>
       <FormBar title={editing ? 'Edit medication' : 'New medication'} onCancel={onCancel} onSave={save} canSave={canSave} />
       <div style={{ padding: '8px 16px 0' }}>
         <Field label="WHO IS IT FOR">
@@ -256,7 +256,7 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
   });
 
   return (
-    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 50 }}>
+    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(50) }}>
       <FormBar title={editing ? 'Edit contact' : 'New contact'} onCancel={onCancel} onSave={save} canSave={canSave} />
       <div style={{ padding: '8px 16px 0' }}>
         <Field label="NAME">

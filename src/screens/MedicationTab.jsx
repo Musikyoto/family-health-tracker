@@ -1,7 +1,7 @@
 // Medication tab — Morning / Noon / Evening (SPEC §8). Converted from the design export.
 // One time bucket shows at a time, picked via a segmented control (Variant A).
 import React from 'react';
-import { T, FOOD_LABEL } from '../lib/theme.js';
+import { T, FOOD_LABEL, safeArea } from '../lib/theme.js';
 import { Icon } from '../components/Icon.jsx';
 import { Avatar, PrimaryButton } from '../components/ui.jsx';
 import { TabHeader, EmptyBlock, FAB } from './CalendarTab.jsx';
@@ -61,7 +61,7 @@ export function MedicationTab({ data, role, onTab, onGear, onAdd, onAddPerson, o
   const activeMeds = data.meds.filter((m) => m.times.includes(time));
 
   return (
-    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 120 }}>
+    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(120) }}>
       <TabHeader active="medication" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} />
 
       {noMeds ? (
