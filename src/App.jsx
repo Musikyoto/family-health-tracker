@@ -116,10 +116,10 @@ export default function App({ family, role, onSignOut }) {
     meds: meds.filter((m) => peopleById[m.personId]),
   };
 
-  // To-do tab badge: important items still waiting to be booked (no date).
+  // To-do tab badge: tentative items still waiting to be booked (no date).
   // Computed once here so every tab's header can show it (ContactsTab has no
   // items of its own). Recomputes on the mutation/refetch cycle like all state.
-  const todoBadge = visibleData.items.filter((it) => it.important && !it.date).length;
+  const todoBadge = visibleData.items.filter((it) => it.tentative && !it.date).length;
 
   const ADD_FORM = { calendar: 'calForm', medication: 'medForm', contacts: 'contactForm', todo: 'todoForm' };
   const onAdd = () => push({ type: ADD_FORM[tab] });

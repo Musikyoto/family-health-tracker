@@ -79,7 +79,7 @@ export function TabHeader({ active, onTab, role, onGear, onSignOut, todoBadge = 
             }}>
               <Icon name={t.icon} size={16} color={on ? '#fff' : T.body} strokeWidth={1.9} />
               {t.label}
-              {/* count of important-and-unbooked items — absolute, so it can't widen the tab or wrap the row */}
+              {/* count of tentative-and-unbooked items — absolute, so it can't widen the tab or wrap the row */}
               {t.key === 'todo' && todoBadge > 0 && (
                 <span style={{
                   position: 'absolute', top: 3, right: 4, minWidth: 16, height: 16, padding: '0 4px', boxSizing: 'border-box',
@@ -133,7 +133,8 @@ export function FAB({ onClick }) {
 }
 
 // `sub` overrides the default meta line (the To-do tab passes its own).
-// `flag` prepends the red important glyph before the title (To-do rows only);
+// `flag` prepends the red tentative glyph before the title (To-do + tentative
+// dated day-list rows);
 // flagged titles ellipsize to one line, unflagged titles are left untouched.
 export function ItemRow({ item, person, onClick, sub, flag = false }) {
   const meta = [person.name, item.type === 'Bill' ? 'Bill' : item.time, item.type === 'Bill' && !item.time ? 'due today' : null]
@@ -323,8 +324,8 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
           <Avatar person={person} size={54} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            {/* read-only flag reflection so viewers (who never see the form) can tell it's important */}
-            {item.important ? (
+            {/* read-only flag reflection so viewers (who never see the form) can tell it's tentative */}
+            {item.tentative ? (
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <Icon name="flag" size={20} color={T.flag} strokeWidth={2.2} style={{ flexShrink: 0, marginTop: 4 }} />
                 <div style={{ fontSize: 23, fontWeight: 700, color: T.ink, lineHeight: 1.2, letterSpacing: '0.1px' }}>{item.title}</div>
