@@ -53,7 +53,7 @@ function MedRow({ med, person, onClick }) {
   );
 }
 
-export function MedicationTab({ data, role, todoBadge, onTab, onGear, onAdd, onAddPerson, onOpenMed, onSignOut }) {
+export function MedicationTab({ data, role, todoBadge, calendarBadge, onTab, onGear, onAdd, onAddPerson, onOpenMed, onSignOut }) {
   const [time, setTime] = React.useState('Morning'); // always Morning on mount — no persistence
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
   const noMeds = data.meds.length === 0;
@@ -62,7 +62,7 @@ export function MedicationTab({ data, role, todoBadge, onTab, onGear, onAdd, onA
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(120) }}>
-      <TabHeader active="medication" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} todoBadge={todoBadge} />
+      <TabHeader active="medication" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} todoBadge={todoBadge} calendarBadge={calendarBadge} />
 
       {noMeds ? (
         role === 'editor' ? (

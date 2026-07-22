@@ -31,7 +31,7 @@ function TodoSub({ item, person }) {
   );
 }
 
-export function TodoTab({ data, role, todoBadge, onTab, onGear, onAdd, onAddPerson, onOpenItem, onSignOut }) {
+export function TodoTab({ data, role, todoBadge, calendarBadge, onTab, onGear, onAdd, onAddPerson, onOpenItem, onSignOut }) {
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
   // longest-waiting first: a booking backlog should surface what's been
   // sitting unbooked the longest, not the newest thing added.
@@ -41,7 +41,7 @@ export function TodoTab({ data, role, todoBadge, onTab, onGear, onAdd, onAddPers
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(120) }}>
-      <TabHeader active="todo" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} todoBadge={todoBadge} />
+      <TabHeader active="todo" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} todoBadge={todoBadge} calendarBadge={calendarBadge} />
 
       {todos.length === 0 ? (
         role === 'editor' ? (

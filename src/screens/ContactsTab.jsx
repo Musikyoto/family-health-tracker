@@ -42,11 +42,11 @@ function ContactCard({ contact, onClick }) {
   );
 }
 
-export function ContactsTab({ contacts, role, todoBadge, onTab, onGear, onAdd, onOpenContact, onSignOut }) {
+export function ContactsTab({ contacts, role, todoBadge, calendarBadge, onTab, onGear, onAdd, onOpenContact, onSignOut }) {
   const noContacts = contacts.length === 0;
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(120) }}>
-      <TabHeader active="contacts" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} todoBadge={todoBadge} />
+      <TabHeader active="contacts" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} todoBadge={todoBadge} calendarBadge={calendarBadge} />
 
       {noContacts ? (
         role === 'editor' ? (

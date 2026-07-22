@@ -116,10 +116,14 @@ export default function App({ family, role, onSignOut }) {
     meds: meds.filter((m) => peopleById[m.personId]),
   };
 
-  // To-do tab badge: tentative items still waiting to be booked (no date).
-  // Computed once here so every tab's header can show it (ContactsTab has no
-  // items of its own). Recomputes on the mutation/refetch cycle like all state.
-  const todoBadge = visibleData.items.filter((it) => it.tentative && !it.date).length;
+  // Tentative-item badges, computed once here so every tab's header can show
+  // them (ContactsTab has no items of its own). The two counts are disjoint —
+  // an item is either dateless (To-do badge) or dated (Calendar badge), never
+  // both — so nothing is double-counted. Recomputes on the mutation/refetch
+  // cycle like all state.
+  const tentativeItems = visibleData.items.filter((it) => it.tentative);
+  const todoBadge = tentativeItems.filter((it) => !it.date).length;
+  const calendarBadge = tentativeItems.filter((it) => it.date).length;
 
   const ADD_FORM = { calendar: 'calForm', medication: 'medForm', contacts: 'contactForm', todo: 'todoForm' };
   const onAdd = () => push({ type: ADD_FORM[tab] });
@@ -179,16 +183,16 @@ export default function App({ family, role, onSignOut }) {
   const onAddPerson = () => push({ type: 'personForm' });
   let tabScreen;
   if (tab === 'calendar') {
-    tabScreen = <CalendarTab data={visibleData} role={role} todoBadge={todoBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+    tabScreen = <CalendarTab data={visibleData} role={role} todoBadge={todoBadge} calendarBadge={calendarBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
       onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />;
   } else if (tab === 'medication') {
-    tabScreen = <MedicationTab data={visibleData} role={role} todoBadge={todoBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+    tabScreen = <MedicationTab data={visibleData} role={role} todoBadge={todoBadge} calendarBadge={calendarBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
       onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={requestSignOut} />;
   } else if (tab === 'todo') {
-    tabScreen = <TodoTab data={visibleData} role={role} todoBadge={todoBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+    tabScreen = <TodoTab data={visibleData} role={role} todoBadge={todoBadge} calendarBadge={calendarBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
       onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />;
   } else {
-    tabScreen = <ContactsTab contacts={contacts} role={role} todoBadge={todoBadge} onTab={setTab} onGear={onGear} onAdd={onAdd}
+    tabScreen = <ContactsTab contacts={contacts} role={role} todoBadge={todoBadge} calendarBadge={calendarBadge} onTab={setTab} onGear={onGear} onAdd={onAdd}
       onOpenContact={(id) => push({ type: 'contactForm', editId: id })} onSignOut={requestSignOut} />;
   }
 
