@@ -53,7 +53,7 @@ const TABS = [
 // Sticky so the tabs stay reachable at any scroll depth (same idiom as
 // FormBar/TopBar: gradient fade, zIndex 20 — below the zIndex-60 overlays).
 // Four tabs need the width three didn't: outer gaps 12->8 and labels 11->10.5.
-export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
+export function TabHeader({ active, onTab, role, onGear, onSignOut, todoBadge = 0 }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
@@ -69,6 +69,7 @@ export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
           const on = active === t.key;
           return (
             <button key={t.key} className="tap" onClick={() => onTab(t.key)} style={{
+              position: 'relative',
               flex: 1, height: 46, borderRadius: 11, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, padding: 0,
               background: on ? T.tealDeep : 'transparent', color: on ? '#fff' : T.body,
@@ -78,6 +79,14 @@ export function TabHeader({ active, onTab, role, onGear, onSignOut }) {
             }}>
               <Icon name={t.icon} size={16} color={on ? '#fff' : T.body} strokeWidth={1.9} />
               {t.label}
+              {/* count of important-and-unbooked items — absolute, so it can't widen the tab or wrap the row */}
+              {t.key === 'todo' && todoBadge > 0 && (
+                <span style={{
+                  position: 'absolute', top: 3, right: 4, minWidth: 16, height: 16, padding: '0 4px', boxSizing: 'border-box',
+                  borderRadius: 999, background: T.flag, color: '#fff', fontSize: 10, fontWeight: 700, lineHeight: 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>{todoBadge}</span>
+              )}
             </button>
           );
         })}
@@ -151,7 +160,7 @@ export function ItemRow({ item, person, onClick, sub, flag = false }) {
   );
 }
 
-export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onOpenItem, onSignOut }) {
+export function CalendarTab({ data, role, todoBadge, onTab, onGear, onAdd, onAddPerson, onOpenItem, onSignOut }) {
   // "today" is computed per render (so the badge stays honest across
   // midnight), but the visible month + selection initialize ONCE at mount —
   // the focus refetch must never move the user's navigation.
@@ -182,7 +191,7 @@ export function CalendarTab({ data, role, onTab, onGear, onAdd, onAddPerson, onO
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(120) }}>
-      <TabHeader active="calendar" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} />
+      <TabHeader active="calendar" onTab={onTab} role={role} onGear={onGear} onSignOut={onSignOut} todoBadge={todoBadge} />
 
       {/* Calendar card */}
       <div style={{ background: T.card, borderRadius: 18, margin: '0 16px', padding: '20px 16px 18px', boxShadow: T.shadowSoft }}>

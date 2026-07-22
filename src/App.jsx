@@ -116,6 +116,11 @@ export default function App({ family, role, onSignOut }) {
     meds: meds.filter((m) => peopleById[m.personId]),
   };
 
+  // To-do tab badge: important items still waiting to be booked (no date).
+  // Computed once here so every tab's header can show it (ContactsTab has no
+  // items of its own). Recomputes on the mutation/refetch cycle like all state.
+  const todoBadge = visibleData.items.filter((it) => it.important && !it.date).length;
+
   const ADD_FORM = { calendar: 'calForm', medication: 'medForm', contacts: 'contactForm', todo: 'todoForm' };
   const onAdd = () => push({ type: ADD_FORM[tab] });
   const onGear = () => push({ type: 'settings' });
@@ -174,16 +179,16 @@ export default function App({ family, role, onSignOut }) {
   const onAddPerson = () => push({ type: 'personForm' });
   let tabScreen;
   if (tab === 'calendar') {
-    tabScreen = <CalendarTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+    tabScreen = <CalendarTab data={visibleData} role={role} todoBadge={todoBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
       onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />;
   } else if (tab === 'medication') {
-    tabScreen = <MedicationTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+    tabScreen = <MedicationTab data={visibleData} role={role} todoBadge={todoBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
       onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={requestSignOut} />;
   } else if (tab === 'todo') {
-    tabScreen = <TodoTab data={visibleData} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+    tabScreen = <TodoTab data={visibleData} role={role} todoBadge={todoBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
       onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />;
   } else {
-    tabScreen = <ContactsTab contacts={contacts} role={role} onTab={setTab} onGear={onGear} onAdd={onAdd}
+    tabScreen = <ContactsTab contacts={contacts} role={role} todoBadge={todoBadge} onTab={setTab} onGear={onGear} onAdd={onAdd}
       onOpenContact={(id) => push({ type: 'contactForm', editId: id })} onSignOut={requestSignOut} />;
   }
 
