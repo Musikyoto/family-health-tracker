@@ -61,7 +61,7 @@ export function TodoTab({ data, role, onTab, onGear, onAdd, onAddPerson, onOpenI
       ) : (
         <div style={{ padding: '4px 16px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {todos.map((it) => (
-            <ItemRow key={it.id} item={it} person={peopleById[it.personId]}
+            <ItemRow key={it.id} item={it} person={peopleById[it.personId]} flag={!!it.important}
               sub={<TodoSub item={it} person={peopleById[it.personId]} />}
               onClick={() => onOpenItem(it.id)} />
           ))}

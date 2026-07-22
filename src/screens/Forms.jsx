@@ -58,6 +58,7 @@ export function CalendarForm({ people, contacts = [], initial, todo = false, onS
   const [date, setDate] = React.useState(() => (initial ? (initial.date ?? '') : todayIso()));
   const [time, setTime] = React.useState(to24(initial?.time || ''));
   const [contactId, setContactId] = React.useState(initial?.contactId || null);
+  const [important, setImportant] = React.useState(initial?.important || false);
   const [description, setDescription] = React.useState(initial?.description || '');
   const [refs, setRefs] = React.useState(initial?.refs?.length ? initial.refs.map(r => ({ ...r })) : []);
 
@@ -67,6 +68,7 @@ export function CalendarForm({ people, contacts = [], initial, todo = false, onS
     date: date || null, // cleared date => null => the item moves to To-do
     time: formatTime(time),
     contactId: contactId || null,
+    important,
     description: description.trim(), refs: refs.filter(r => r.label.trim() || r.url.trim()),
   });
 
@@ -115,6 +117,21 @@ export function CalendarForm({ people, contacts = [], initial, todo = false, onS
             )}
           </>
         )}
+
+        <Field label="PRIORITY">
+          <button type="button" onClick={() => setImportant((v) => !v)} style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px',
+            borderRadius: 14, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, cursor: 'pointer', fontFamily: 'inherit',
+          }}>
+            <div style={{
+              width: 24, height: 24, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: important ? T.flag : '#fff', border: important ? 'none' : `2px solid ${T.faint}`,
+            }}>
+              {important && <Icon name="check" size={15} color="#fff" strokeWidth={2.8} />}
+            </div>
+            <span style={{ fontSize: 16, fontWeight: 600, color: T.deep }}>Mark as important</span>
+          </button>
+        </Field>
 
         <Field label="DOCTOR (OPTIONAL)" hint="From your Contacts.">
           <select value={contactId || ''} onChange={(e) => setContactId(e.target.value || null)} style={{ ...inputStyle, paddingRight: 8 }}>
