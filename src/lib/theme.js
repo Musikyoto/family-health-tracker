@@ -9,6 +9,7 @@ export const T = {
   red: '#E2542F',
   redTint: 'rgba(226,84,47,0.10)',
   flag: '#C0392B',       // "tentative" attention marker — deliberately distinct from red (delete/danger)
+  tint: '#FBE4DC',       // soft wash behind a tentative calendar day (pairs with flag)
   deep: '#1F4A40',
   body: '#6E938A',
   muted: '#9CBAB1',

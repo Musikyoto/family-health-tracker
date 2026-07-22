@@ -223,16 +223,26 @@ export function CalendarTab({ data, role, todoBadge, calendarBadge, onTab, onGea
           <div key={wi} style={{ display: 'flex', marginTop: 6 }}>
             {week.map((cell, ci) => {
               const iso = cell.inMonth ? isoOf(vy, vm, cell.day) : null;
-              const has = iso && itemsByDate[iso];
+              const dayItems = (iso && itemsByDate[iso]) || [];
+              const has = dayItems.length > 0;
+              const hasFirm = dayItems.some((it) => !it.tentative);
+              const hasTentative = dayItems.some((it) => it.tentative);
               const isToday = iso === today;
               const isSel = iso && iso === selected && !isToday;
               const tappable = isToday || has;
               let numColor = T.metaGrey, weight = 400, circle = {};
               if (!cell.inMonth) { numColor = T.faint; }
-              // today = the same tealDeep-fill + soft lift the header's active tab uses
+              // today keeps its tealDeep fill + soft lift (the header's active-tab treatment)
               else if (isToday) { numColor = '#fff'; weight = 700; circle = { background: T.tealDeep, boxShadow: T.shadowActive }; }
-              else if (isSel) { numColor = T.ink; weight = 700; circle = { background: T.selFill }; }
+              else if (isSel) { numColor = hasTentative ? T.flag : T.ink; weight = 700; circle = { background: T.selFill }; }
+              // a plain tentative day: soft red wash behind a red number
+              else if (hasTentative) { numColor = T.flag; weight = 600; circle = { background: T.tint }; }
               else if (has) { numColor = T.ink; weight = 600; }
+              // a today/selected day that is ALSO tentative keeps its own circle and
+              // gets the tint as a ring around it — tentative never overrides today
+              if (hasTentative && (isToday || isSel)) {
+                circle = { ...circle, boxShadow: [circle.boxShadow, `0 0 0 3px ${T.tint}`].filter(Boolean).join(', ') };
+              }
               return (
                 <div key={ci} onClick={tappable ? () => setSelected(iso) : undefined}
                   style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 4, cursor: tappable ? 'pointer' : 'default', userSelect: 'none' }}>
@@ -240,9 +250,10 @@ export function CalendarTab({ data, role, todoBadge, calendarBadge, onTab, onGea
                     width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 17, fontWeight: weight, color: numColor, fontVariantNumeric: 'tabular-nums', transition: 'background 140ms ease', ...circle,
                   }}>{cell.day}</div>
-                  <div style={{ height: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
-                    {/* one ink-green dot per day with items, whatever the count */}
-                    {has && <div style={{ width: 6, height: 6, borderRadius: '50%', background: isToday ? 'rgba(255,255,255,0.92)' : T.tealDeep }} />}
+                  {/* firm (teal) + tentative (red) dots side by side — the signal is never colour-only */}
+                  <div style={{ height: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 1 }}>
+                    {hasFirm && <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.tealDeep }} />}
+                    {hasTentative && <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.flag }} />}
                   </div>
                 </div>
               );
@@ -279,7 +290,7 @@ export function CalendarTab({ data, role, todoBadge, calendarBadge, onTab, onGea
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {selItems.length ? selItems.map((it) => (
-              <ItemRow key={it.id} item={it} person={peopleById[it.personId]} onClick={() => onOpenItem(it.id)} />
+              <ItemRow key={it.id} item={it} person={peopleById[it.personId]} flag={!!it.tentative} onClick={() => onOpenItem(it.id)} />
             )) : (
               <div style={{ background: T.card, borderRadius: 18, padding: '26px 16px', textAlign: 'center', boxShadow: T.shadowSoft, color: T.metaGrey, fontSize: 15, fontWeight: 500 }}>Nothing scheduled</div>
             )}
