@@ -8,6 +8,7 @@ export const T = {
   accentTint: 'rgba(31,169,160,0.12)',
   red: '#E2542F',
   redTint: 'rgba(226,84,47,0.10)',
+  flag: '#C0392B',       // "important" attention marker — deliberately distinct from red (delete/danger)
   deep: '#1F4A40',
   body: '#6E938A',
   muted: '#9CBAB1',

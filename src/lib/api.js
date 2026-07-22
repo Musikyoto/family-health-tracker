@@ -113,11 +113,11 @@ export async function deletePerson(id) {
 // contactFromRow, so its phones pass the same phoneFromJson shim.
 // created_at rides along so the To-do tab can surface the longest-waiting
 // unscheduled item first; date is nullable (015) = "not scheduled yet".
-const ITEM_COLS = 'id, person_id, type, title, date, time, description, refs, contact_id, created_at, contact:contacts(id, name, specialty, phones, now_serving)'
+const ITEM_COLS = 'id, person_id, type, title, date, time, description, refs, contact_id, created_at, important, contact:contacts(id, name, specialty, phones, now_serving)'
 const itemFromRow = (r) => ({
   id: r.id, personId: r.person_id, type: r.type, title: r.title,
   date: r.date ?? null, time: r.time ?? '', description: r.description ?? '', refs: r.refs ?? [],
-  contactId: r.contact_id ?? null, createdAt: r.created_at,
+  contactId: r.contact_id ?? null, createdAt: r.created_at, important: r.important ?? false,
   contact: r.contact ? contactFromRow(r.contact) : null,
 })
 const itemFields = (it) => ({
@@ -125,7 +125,7 @@ const itemFields = (it) => ({
   // guard the column boundary: '' is not a valid date, null is "not scheduled"
   date: it.date || null,
   time: it.time, description: it.description, refs: it.refs,
-  contact_id: it.contactId ?? null,
+  contact_id: it.contactId ?? null, important: !!it.important,
 })
 
 export async function listItems(familyId) {

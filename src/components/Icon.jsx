@@ -36,6 +36,7 @@ export function Icon({ name, size = 22, color = 'currentColor', strokeWidth = 1.
     video: <><rect x="3" y="6" width="13" height="12" rx="2.6" /><path d="M16 10.5l5-3v9l-5-3z" /></>,
     stethoscope: <><path d="M6.5 3v6a3.5 3.5 0 0 0 7 0V3" /><path d="M10 12.5V15a5 5 0 0 0 10 0v-2" /><circle cx="20" cy="10.8" r="2.2" /></>,
     checklist: <><path d="M3.5 6.5l2 2 3-3.5M3.5 14l2 2 3-3.5" /><path d="M12.5 7h8M12.5 15h8" /></>,
+    flag: <><path d="M5 15s1-1 4-1 5 2 8 2 4-1 4-1V4s-1 1-4 1-5-2-8-2-4 1-4 1z" /><path d="M5 22v-7" /></>,
   };
   return <svg {...common}>{paths[name] || null}</svg>;
 }
