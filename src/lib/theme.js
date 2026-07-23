@@ -8,7 +8,7 @@ export const T = {
   accentTint: 'rgba(31,169,160,0.12)',
   red: '#E2542F',
   redTint: 'rgba(226,84,47,0.10)',
-  flag: '#C0392B',       // "tentative" attention marker — deliberately distinct from red (delete/danger)
+  flag: '#A93226',       // "tentative" attention marker — deepened from #C0392B to clear WCAG AA (4.5:1) on the tint; distinct from red (delete/danger)
   tint: '#FBE4DC',       // soft wash behind a tentative calendar day (pairs with flag)
   deep: '#1F4A40',
   body: '#6E938A',
