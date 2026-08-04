@@ -36,56 +36,54 @@ function buildWeeks(year, month) {
   return weeks;
 }
 
-// Shared header: tabs + a top-right slot — gear (→ Settings) for editors,
-// sign-out for viewers (who can't reach Settings).
-const slotBtnStyle = {
-  width: 44, height: 44, borderRadius: '50%', border: 'none', cursor: 'pointer', background: '#fff',
-  boxShadow: T.shadowSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0,
-};
-// Tab key (used for routing + active state) is decoupled from the display
-// label, so the medication tab can show "Meds" while staying keyed 'medication'.
+// Header: a centred logo over a 3×2 grid of six large targets — five content
+// tabs plus a Settings cell (an action, not a tab) that replaces the old corner
+// gear, for both roles. Tab keys are decoupled from labels ('medication'→"Meds").
 const TABS = [
   { key: 'calendar', label: 'Calendar', icon: 'calendar' },
   { key: 'medication', label: 'Meds', icon: 'pill' },
   { key: 'contacts', label: 'Contacts', icon: 'stethoscope' },
   { key: 'todo', label: 'To-do', icon: 'checklist' },
+  { key: 'reference', label: 'Reference', icon: 'folder' },
 ];
-// Sticky so the tabs stay reachable at any scroll depth (same idiom as
-// FormBar/TopBar: gradient fade, zIndex 20 — below the zIndex-60 overlays).
-// Four tabs need the width three didn't: outer gaps 12->8 and labels 11->10.5.
-export function TabHeader({ active, onTab, role, onGear, onSignOut, todoBadge = 0, calendarBadge = 0 }) {
+// One cell, active or not. The grid's 1fr columns adapt 320→430px by
+// construction — no fixed widths, no media queries.
+const cellStyle = (on) => ({
+  position: 'relative', minHeight: 60, borderRadius: 12, border: 'none', padding: '6px 2px',
+  cursor: 'pointer', fontFamily: 'inherit',
+  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
+  background: on ? T.tealDeep : 'transparent', color: on ? '#fff' : T.body,
+  fontSize: 12.5, fontWeight: on ? 700 : 600, letterSpacing: '0.1px',
+  boxShadow: on ? T.shadowActive : 'none',
+  transition: 'background 160ms ease, color 160ms ease',
+});
+// Sticky at any scroll depth (same idiom as FormBar/TopBar: gradient fade,
+// zIndex 20 — below the zIndex-60 overlays). The fade covers the taller header.
+export function TabHeader({ active, onTab, onGear, todoBadge = 0, calendarBadge = 0 }) {
   const badges = { todo: todoBadge, calendar: calendarBadge };
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 8,
-      padding: `${safeArea.top(60)} 16px 16px`,
+      padding: `${safeArea.top(52)} 16px 16px`,
       position: 'sticky', top: 0, zIndex: 20,
-      // opaque past the tab pill's bottom edge, then a short fade — otherwise
-      // scrolled content shows through beside the pill
-      background: 'linear-gradient(180deg, #E6F2EC 86%, rgba(230,242,236,0) 100%)',
+      background: 'linear-gradient(180deg, #E6F2EC 90%, rgba(230,242,236,0) 100%)',
     }}>
-      <img src="/mamori-mark.svg" alt="Mamori" width={54} height={54} style={{ flexShrink: 0 }} />
-      <div style={{ flex: 1, display: 'flex', gap: 4, padding: 4, background: '#fff', borderRadius: 15, boxShadow: T.shadowSoft }}>
+      {/* Row 1: centred logo, nothing else. */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+        <img src="/mamori-mark.svg" alt="Mamori" width={34} height={34} />
+      </div>
+      {/* Row 2: 3×2 grid of six large targets. */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, padding: 6, background: '#fff', borderRadius: 18, boxShadow: T.shadowSoft }}>
         {TABS.map((t) => {
           const on = active === t.key;
           const badge = badges[t.key] || 0;
           return (
-            <button key={t.key} className="tap" onClick={() => onTab(t.key)} style={{
-              position: 'relative',
-              flex: 1, height: 46, borderRadius: 11, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, padding: 0,
-              background: on ? T.tealDeep : 'transparent', color: on ? '#fff' : T.body,
-              fontSize: 10.5, fontWeight: on ? 700 : 600, letterSpacing: '0.1px',
-              boxShadow: on ? T.shadowActive : 'none',
-              transition: 'background 160ms ease, color 160ms ease',
-            }}>
-              <Icon name={t.icon} size={16} color={on ? '#fff' : T.body} strokeWidth={1.9} />
+            <button key={t.key} className="tap" onClick={() => onTab(t.key)} style={cellStyle(on)}>
+              <Icon name={t.icon} size={23} color={on ? '#fff' : T.body} strokeWidth={1.9} />
               {t.label}
-              {/* tentative-item count: dateless on To-do, dated on Calendar (disjoint).
-                  Absolute, so it can't widen the tab or wrap the row. */}
+              {/* tentative-item count (dateless on To-do, dated on Calendar) — absolute, out of flow */}
               {badge > 0 && (
                 <span style={{
-                  position: 'absolute', top: 3, right: 4, minWidth: 16, height: 16, padding: '0 4px', boxSizing: 'border-box',
+                  position: 'absolute', top: 7, right: 10, minWidth: 16, height: 16, padding: '0 4px', boxSizing: 'border-box',
                   borderRadius: 999, background: T.flag, color: '#fff', fontSize: 10, fontWeight: 700, lineHeight: 1,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>{badge}</span>
@@ -93,16 +91,13 @@ export function TabHeader({ active, onTab, role, onGear, onSignOut, todoBadge = 
             </button>
           );
         })}
+        {/* Settings — the 6th cell. Opens Settings for both roles (viewers get a
+            view-only Settings with Sign out); replaces the old corner gear. */}
+        <button className="tap" onClick={onGear} aria-label="Settings" style={cellStyle(false)}>
+          <Icon name="gear" size={23} color={T.body} strokeWidth={1.9} />
+          Settings
+        </button>
       </div>
-      {role === 'editor' ? (
-        <button onClick={onGear} aria-label="Settings" style={slotBtnStyle}>
-          <Icon name="gear" size={22} color={T.body} />
-        </button>
-      ) : (
-        <button onClick={onSignOut} aria-label="Sign out" style={slotBtnStyle}>
-          <Icon name="logout" size={21} color={T.body} strokeWidth={2} />
-        </button>
-      )}
     </div>
   );
 }

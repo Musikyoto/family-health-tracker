@@ -6,7 +6,8 @@ import { Icon } from '../components/Icon.jsx';
 import { Avatar, TopBar, PrimaryButton, GhostButton, Field, TextInput } from '../components/ui.jsx';
 
 // ── Settings home ────────────────────────────────────────────────────
-export function SettingsHome({ onBack, onPeople, onInvite, peopleSummary, onSignOut }) {
+export function SettingsHome({ role, onBack, onPeople, onInvite, peopleSummary, onSignOut }) {
+  const editor = role === 'editor';
   const Row = ({ icon, title, sub, onClick, muted, badge }) => (
     <div onClick={onClick} style={{
       display: 'flex', alignItems: 'center', gap: 14, padding: '15px 16px',
@@ -27,21 +28,26 @@ export function SettingsHome({ onBack, onPeople, onInvite, peopleSummary, onSign
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: 40 }}>
       <TopBar title="Settings" onBack={onBack} closeIcon />
       <div style={{ padding: '6px 16px 0' }}>
-        <div style={{ background: T.card, borderRadius: 22, boxShadow: T.shadowCard, overflow: 'hidden' }}>
-          <Row icon="users" title="People" sub={peopleSummary} onClick={onPeople} />
-          <div style={{ height: 1, background: T.fieldBorder, marginLeft: 68 }} />
-          <Row icon="link" title="Invite links" sub="View-only & edit access" onClick={onInvite} />
-        </div>
+        {editor ? (
+          <>
+            <div style={{ background: T.card, borderRadius: 22, boxShadow: T.shadowCard, overflow: 'hidden' }}>
+              <Row icon="users" title="People" sub={peopleSummary} onClick={onPeople} />
+              <div style={{ height: 1, background: T.fieldBorder, marginLeft: 68 }} />
+              <Row icon="link" title="Invite links" sub="View-only & edit access" onClick={onInvite} />
+            </div>
 
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted, letterSpacing: '0.3px', padding: '22px 8px 10px' }}>COMING LATER</div>
-        <div style={{ background: T.card, borderRadius: 22, boxShadow: T.shadowCard, overflow: 'hidden' }}>
-          <Row icon="receipt" title="Bills" muted badge="SOON" />
-          <div style={{ height: 1, background: T.fieldBorder, marginLeft: 68 }} />
-          <Row icon="heart" title="Account" muted badge="SOON" />
-        </div>
-        <div style={{ textAlign: 'center', color: T.muted, fontSize: 13, fontWeight: 500, padding: '24px 20px 0', lineHeight: 1.5 }}>
-          Settings are only visible to editors.
-        </div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted, letterSpacing: '0.3px', padding: '22px 8px 10px' }}>COMING LATER</div>
+            <div style={{ background: T.card, borderRadius: 22, boxShadow: T.shadowCard, overflow: 'hidden' }}>
+              <Row icon="receipt" title="Bills" muted badge="SOON" />
+              <div style={{ height: 1, background: T.fieldBorder, marginLeft: 68 }} />
+              <Row icon="heart" title="Account" muted badge="SOON" />
+            </div>
+          </>
+        ) : (
+          <div style={{ background: T.card, borderRadius: 22, boxShadow: T.shadowCard, padding: '18px 18px', color: T.body, fontSize: 14.5, fontWeight: 500, lineHeight: 1.5 }}>
+            You have view-only access to this family. An editor manages people and invite links.
+          </div>
+        )}
 
         {onSignOut && (
           <div style={{ padding: '22px 0 0' }}>

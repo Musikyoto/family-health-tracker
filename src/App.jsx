@@ -164,7 +164,7 @@ export default function App({ family, role, onSignOut }) {
         onSave={async (rec) => { try { await saveMed(rec); pop(); } catch (e) { console.error('Save med failed:', e); } }}
         onDelete={async () => { try { await removeMedById(top.editId); closeAll(); } catch (e) { console.error('Delete med failed:', e); } }} />;
     } else if (top.type === 'settings') {
-      overlay = <SettingsHome onBack={pop} peopleSummary={peopleSummary}
+      overlay = <SettingsHome role={role} onBack={pop} peopleSummary={peopleSummary}
         onPeople={() => push({ type: 'people' })}
         onInvite={() => push({ type: 'invite' })}
         onSignOut={requestSignOut} />;
