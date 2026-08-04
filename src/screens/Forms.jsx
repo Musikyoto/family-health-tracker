@@ -360,3 +360,68 @@ export function ContactForm({ initial, onSave, onCancel, onDelete }) {
     </div>
   );
 }
+
+// ── Form D: Reference (past result / document) ───────────────────────
+// A reference is an item with type 'Reference': person, title, an optional
+// date, notes, and links. No time, type chips, doctor, or tentative toggle.
+export function ReferenceForm({ people, initial, onSave, onCancel, onDelete }) {
+  const editing = !!initial;
+  const [personId, setPersonId] = React.useState(initial?.personId || people[0]?.id || null);
+  const [title, setTitle] = React.useState(initial?.title || '');
+  const [date, setDate] = React.useState(initial?.date ?? ''); // optional, empty by default
+  const [description, setDescription] = React.useState(initial?.description || '');
+  const [refs, setRefs] = React.useState(initial?.refs?.length ? initial.refs.map((r) => ({ ...r })) : []);
+
+  const canSave = !!personId && title.trim().length > 0;
+  const save = () => onSave({
+    id: initial?.id, personId, type: 'Reference', title: title.trim(),
+    date: date || null, time: '', contactId: null, tentative: false,
+    description: description.trim(), refs: refs.filter((r) => r.label.trim() || r.url.trim()),
+  });
+
+  return (
+    <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(50) }}>
+      <FormBar title={editing ? 'Edit reference' : 'New reference'} onCancel={onCancel} onSave={save} canSave={canSave} />
+      <div style={{ padding: '8px 16px 0' }}>
+        <Field label="WHO IS IT FOR">
+          <PersonPicker people={people} value={personId} onChange={setPersonId} />
+        </Field>
+
+        <Field label="TITLE">
+          <TextInput value={title} onChange={setTitle} placeholder="e.g. Blood test results" />
+        </Field>
+
+        <Field label="DATE — OPTIONAL">
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...inputStyle, paddingRight: 8 }} />
+        </Field>
+
+        <Field label="DESCRIPTION">
+          <TextArea value={description} onChange={setDescription} placeholder="Notes, what it's for…" rows={3} />
+        </Field>
+
+        <Field label="REFERENCES & DOCUMENTS" hint="Links only — the app doesn't host files. Paste a Drive or Photos link.">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {refs.map((r, i) => (
+              <div key={i} style={{ background: T.card, borderRadius: 16, padding: 12, boxShadow: T.shadowSoft, position: 'relative' }}>
+                <button onClick={() => setRefs(refs.filter((_, j) => j !== i))} aria-label="Remove link" style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: '50%', border: 'none', background: T.fieldBg, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                  <Icon name="close" size={14} color={T.body} strokeWidth={2} />
+                </button>
+                <input value={r.label} placeholder="Label (e.g. Lab report)" onChange={(e) => { const n = [...refs]; n[i] = { ...r, label: e.target.value }; setRefs(n); }} style={{ ...inputStyle, height: 42, marginBottom: 8, paddingRight: 34 }} />
+                <input value={r.url} placeholder="Paste link…" onChange={(e) => { const n = [...refs]; n[i] = { ...r, url: e.target.value, kind: /\.(jpg|jpeg|png|heic|gif)/i.test(e.target.value) ? 'image' : 'doc' }; setRefs(n); }} style={{ ...inputStyle, height: 42 }} />
+              </div>
+            ))}
+            <button onClick={() => setRefs([...refs, { label: '', url: '', kind: 'doc' }])} style={{ height: 46, borderRadius: 14, border: `1px dashed ${T.fieldBorder}`, background: T.fieldBg, color: T.accentSolid, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+              <Icon name="plus" size={17} color={T.accentSolid} strokeWidth={2.2} /> Add a link
+            </button>
+          </div>
+        </Field>
+
+        {editing && (
+          <div style={{ marginTop: 8 }}>
+            <GhostButton danger onClick={onDelete}><Icon name="trash" size={18} color={T.red} strokeWidth={1.9} /> Delete reference</GhostButton>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

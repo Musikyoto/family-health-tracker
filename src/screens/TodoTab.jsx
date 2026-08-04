@@ -36,7 +36,7 @@ export function TodoTab({ data, role, todoBadge, calendarBadge, onTab, onGear, o
   // longest-waiting first: a booking backlog should surface what's been
   // sitting unbooked the longest, not the newest thing added.
   const todos = data.items
-    .filter((it) => !it.date)
+    .filter((it) => !it.date && it.type !== 'Reference')
     .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
 
   return (

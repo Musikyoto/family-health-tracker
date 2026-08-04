@@ -9,7 +9,8 @@ import { CalendarTab, ItemDetail } from './screens/CalendarTab.jsx';
 import { MedicationTab } from './screens/MedicationTab.jsx';
 import { ContactsTab } from './screens/ContactsTab.jsx';
 import { TodoTab } from './screens/TodoTab.jsx';
-import { CalendarForm, MedForm, ContactForm } from './screens/Forms.jsx';
+import { ReferenceTab } from './screens/ReferenceTab.jsx';
+import { CalendarForm, MedForm, ContactForm, ReferenceForm } from './screens/Forms.jsx';
 import { SettingsHome, PeopleList, PersonForm, DeletePersonDialog, SignOutDialog } from './screens/Settings.jsx';
 import { InviteScreen } from './screens/InviteScreen.jsx';
 import { LoadingScreen } from './components/LoadingScreen.jsx';
@@ -121,11 +122,13 @@ export default function App({ family, role, onSignOut }) {
   // an item is either dateless (To-do badge) or dated (Calendar badge), never
   // both — so nothing is double-counted. Recomputes on the mutation/refetch
   // cycle like all state.
-  const tentativeItems = visibleData.items.filter((it) => it.tentative);
+  // References carry no tentative flag (their form has no toggle), but guard
+  // explicitly so a reference can never surface in a tentative badge.
+  const tentativeItems = visibleData.items.filter((it) => it.tentative && it.type !== 'Reference');
   const todoBadge = tentativeItems.filter((it) => !it.date).length;
   const calendarBadge = tentativeItems.filter((it) => it.date).length;
 
-  const ADD_FORM = { calendar: 'calForm', medication: 'medForm', contacts: 'contactForm', todo: 'todoForm' };
+  const ADD_FORM = { calendar: 'calForm', medication: 'medForm', contacts: 'contactForm', todo: 'todoForm', reference: 'referenceForm' };
   const onAdd = () => push({ type: ADD_FORM[tab] });
   const onGear = () => push({ type: 'settings' });
 
@@ -135,7 +138,7 @@ export default function App({ family, role, onSignOut }) {
     if (top.type === 'itemDetail') {
       const item = items.find((x) => x.id === top.id);
       if (item && peopleById[item.personId]) overlay = <ItemDetail item={item} person={peopleById[item.personId]} role={role}
-        onBack={pop} onEdit={() => push({ type: 'calForm', editId: item.id })} />;
+        onBack={pop} onEdit={() => push({ type: item.type === 'Reference' ? 'referenceForm' : 'calForm', editId: item.id })} />;
     } else if (top.type === 'calForm') {
       const initial = top.editId ? items.find((x) => x.id === top.editId) : null;
       overlay = <CalendarForm people={people} contacts={contacts} initial={initial}
@@ -148,6 +151,12 @@ export default function App({ family, role, onSignOut }) {
       overlay = <CalendarForm people={people} contacts={contacts} todo
         onCancel={pop}
         onSave={async (rec) => { try { await saveItem({ ...rec, type: 'Appointment', date: null }); pop(); } catch (e) { console.error('Save to-do failed:', e); } }} />;
+    } else if (top.type === 'referenceForm') {
+      const initial = top.editId ? items.find((x) => x.id === top.editId) : null;
+      overlay = <ReferenceForm people={people} initial={initial}
+        onCancel={pop}
+        onSave={async (rec) => { try { await saveItem(rec); pop(); } catch (e) { console.error('Save reference failed:', e); } }}
+        onDelete={async () => { try { await removeItemById(top.editId); closeAll(); } catch (e) { console.error('Delete reference failed:', e); } }} />;
     } else if (top.type === 'medForm') {
       const initial = top.editId ? meds.find((x) => x.id === top.editId) : null;
       overlay = <MedForm people={people} initial={initial}
@@ -190,6 +199,9 @@ export default function App({ family, role, onSignOut }) {
       onOpenMed={(id) => push({ type: 'medForm', editId: id })} onSignOut={requestSignOut} />;
   } else if (tab === 'todo') {
     tabScreen = <TodoTab data={visibleData} role={role} todoBadge={todoBadge} calendarBadge={calendarBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
+      onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />;
+  } else if (tab === 'reference') {
+    tabScreen = <ReferenceTab data={visibleData} role={role} todoBadge={todoBadge} calendarBadge={calendarBadge} onTab={setTab} onGear={onGear} onAdd={onAdd} onAddPerson={onAddPerson}
       onOpenItem={(id) => push({ type: 'itemDetail', id })} onSignOut={requestSignOut} />;
   } else {
     tabScreen = <ContactsTab contacts={contacts} role={role} todoBadge={todoBadge} calendarBadge={calendarBadge} onTab={setTab} onGear={onGear} onAdd={onAdd}

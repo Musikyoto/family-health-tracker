@@ -37,6 +37,7 @@ export function Icon({ name, size = 22, color = 'currentColor', strokeWidth = 1.
     stethoscope: <><path d="M6.5 3v6a3.5 3.5 0 0 0 7 0V3" /><path d="M10 12.5V15a5 5 0 0 0 10 0v-2" /><circle cx="20" cy="10.8" r="2.2" /></>,
     checklist: <><path d="M3.5 6.5l2 2 3-3.5M3.5 14l2 2 3-3.5" /><path d="M12.5 7h8M12.5 15h8" /></>,
     flag: <><path d="M5 15s1-1 4-1 5 2 8 2 4-1 4-1V4s-1 1-4 1-5-2-8-2-4 1-4 1z" /><path d="M5 22v-7" /></>,
+    folder: <path d="M3 7a2 2 0 0 1 2-2h4l2 2.4h8a2 2 0 0 1 2 2v7.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
   };
   return <svg {...common}>{paths[name] || null}</svg>;
 }

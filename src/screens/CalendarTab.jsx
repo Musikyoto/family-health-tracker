@@ -177,7 +177,10 @@ export function CalendarTab({ data, role, todoBadge, calendarBadge, onTab, onGea
   // Undated items live in the To-do tab — they must not reach the grid, the
   // dots, the day lists, or the empty-state check (a family with only to-dos
   // would otherwise see an empty day list instead of the empty state).
-  const datedItems = data.items.filter((it) => it.date);
+  // References are records, not appointments — they never reach the grid, even
+  // when dated. (A reference is an item with type 'Reference'; the Reference tab
+  // owns them.)
+  const datedItems = data.items.filter((it) => it.date && it.type !== 'Reference');
   const itemsByDate = {};
   datedItems.forEach((it) => { (itemsByDate[it.date] = itemsByDate[it.date] || []).push(it); });
 
@@ -355,8 +358,12 @@ export function ItemDetail({ item, person, role, onBack, onEdit }) {
         </div>
 
         <div style={{ background: T.card, borderRadius: 18, padding: '4px 18px 16px', boxShadow: T.shadowSoft }}>
-          <Row icon="calendar" label="DATE" value={dateStr
-            || <span style={{ color: T.metaGrey }}>Not scheduled yet</span>} />
+          {/* references show the date row only when set; other items show
+              "Not scheduled yet" so an undated to-do reads clearly */}
+          {(dateStr || item.type !== 'Reference') && (
+            <Row icon="calendar" label="DATE" value={dateStr
+              || <span style={{ color: T.metaGrey }}>Not scheduled yet</span>} />
+          )}
           {item.time && <Row icon="clock" label="TIME" value={item.time} />}
           {/* pre-wrap keeps the user's line breaks; anywhere guards long unbroken strings */}
           {item.description && <Row icon="doc" label="DESCRIPTION"
