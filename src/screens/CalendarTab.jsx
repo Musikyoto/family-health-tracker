@@ -69,7 +69,7 @@ export function TabHeader({ active, onTab, onGear, todoBadge = 0, calendarBadge 
     }}>
       {/* Row 1: centred logo, nothing else. */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-        <img src="/mamori-mark.svg" alt="Mamori" width={34} height={34} />
+        <img src="/mamori-mark.svg" alt="Mamori" width={48} height={48} />
       </div>
       {/* Row 2: 3×2 grid of six large targets. */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, padding: 6, background: '#fff', borderRadius: 18, boxShadow: T.shadowSoft }}>
