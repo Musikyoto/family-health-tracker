@@ -166,14 +166,22 @@ export async function deleteItem(id) {
 
 // ── Meds ─────────────────────────────────────────────────────────────
 // times is text[] both sides (subset of Morning/Noon/Evening).
-const MED_COLS = 'id, person_id, name, dose, times, food, note'
+// start_date/end_date are the optional course dates from migration 019 and are
+// nullable on both sides: null means "not set", which reads as on-going. They
+// keep null (not '') on the way in so "has an end date" is a plain null check;
+// on the way out an emptied date input gives '', which must be written as null
+// or Postgres rejects it as an invalid date (the items.date lesson).
+// "Finished" is derived in the UI from end_date — there is no status column.
+const MED_COLS = 'id, person_id, name, dose, times, food, note, start_date, end_date'
 const medFromRow = (r) => ({
   id: r.id, personId: r.person_id, name: r.name, dose: r.dose ?? '',
   times: r.times ?? [], food: r.food ?? 'none', note: r.note ?? '',
+  startDate: r.start_date ?? null, endDate: r.end_date ?? null,
 })
 const medFields = (m) => ({
   person_id: m.personId, name: m.name, dose: m.dose,
   times: m.times, food: m.food, note: m.note,
+  start_date: m.startDate || null, end_date: m.endDate || null,
 })
 
 export async function listMeds(familyId) {

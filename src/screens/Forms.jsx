@@ -182,10 +182,22 @@ export function MedForm({ people, initial, onSave, onCancel, onDelete }) {
   const [times, setTimes] = React.useState(initial?.times ? [...initial.times] : []);
   const [food, setFood] = React.useState(initial?.food || 'none');
   const [note, setNote] = React.useState(initial?.note || '');
+  // Course dates are optional; '' is this form's empty, null is the column's.
+  const [startDate, setStartDate] = React.useState(initial?.startDate ?? '');
+  const [endDate, setEndDate] = React.useState(initial?.endDate ?? '');
+  // On-going isn't stored — it IS "no end date". So a new medication starts
+  // on-going, and an existing one with no end date opens with the toggle on.
+  const [ongoing, setOngoing] = React.useState(!initial?.endDate);
 
   const toggleTime = (t) => setTimes((cur) => cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]);
+  // Turning on-going ON drops any end date, so the two can never both hold a value.
+  const toggleOngoing = () => setOngoing((on) => { if (!on) setEndDate(''); return !on; });
   const canSave = !!personId && name.trim().length > 0 && times.length > 0;
-  const save = () => onSave({ id: initial?.id, personId, name: name.trim(), dose: dose.trim(), times, food, note: note.trim() });
+  const save = () => onSave({
+    id: initial?.id, personId, name: name.trim(), dose: dose.trim(), times, food, note: note.trim(),
+    startDate: startDate || null,
+    endDate: ongoing ? null : (endDate || null),
+  });
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(50) }}>
@@ -215,6 +227,31 @@ export function MedForm({ people, initial, onSave, onCancel, onDelete }) {
             ))}
           </div>
         </Field>
+
+        <Field label="START DATE — OPTIONAL">
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={{ ...inputStyle, paddingRight: 8 }} />
+        </Field>
+
+        <Field>
+          <button type="button" onClick={toggleOngoing} style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px',
+            borderRadius: 14, background: T.fieldBg, border: `1px solid ${T.fieldBorder}`, cursor: 'pointer', fontFamily: 'inherit',
+          }}>
+            <div style={{
+              width: 24, height: 24, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: ongoing ? T.chipOn : '#fff', border: ongoing ? 'none' : `2px solid ${T.faint}`,
+            }}>
+              {ongoing && <Icon name="check" size={15} color="#fff" strokeWidth={2.8} />}
+            </div>
+            <span style={{ fontSize: 16, fontWeight: 600, color: T.deep }}>On-going</span>
+          </button>
+        </Field>
+
+        {!ongoing && (
+          <Field label="END DATE" hint="After this date it moves to Finished medicines.">
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={{ ...inputStyle, paddingRight: 8 }} />
+          </Field>
+        )}
 
         <Field label="NOTE">
           <TextArea value={note} onChange={setNote} placeholder="e.g. take 30 min before eating, avoid dairy" rows={2} />
