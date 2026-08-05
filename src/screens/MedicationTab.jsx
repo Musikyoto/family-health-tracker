@@ -2,12 +2,36 @@
 // One time bucket shows at a time, picked via a segmented control (Variant A).
 import React from 'react';
 import { T, FOOD_LABEL, safeArea } from '../lib/theme.js';
+import { todayIso } from '../lib/data.js';
 import { Icon } from '../components/Icon.jsx';
 import { Avatar, PrimaryButton } from '../components/ui.jsx';
 import { TabHeader, EmptyBlock, FAB } from './CalendarTab.jsx';
 import { Copyright } from '../components/Copyright.jsx';
 
 const TIMES = ['Morning', 'Noon', 'Evening'];
+
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// Parse at local midnight: `new Date('2026-08-04')` is UTC midnight and renders
+// a day early anywhere west of UTC — the same trap todayIso() avoids.
+const parseIso = (iso) => new Date(`${iso}T00:00:00`);
+const fmtMonthYear = (iso) => { const d = parseIso(iso); return `${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`; };
+const fmtDayMonth = (iso) => { const d = parseIso(iso); return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}`; };
+
+// A course is finished the day AFTER its end date — an end date of today means
+// today is still a day it's taken. ISO dates are zero-padded, so comparing the
+// strings is chronological: no Date object, no timezone, no toISOString.
+const isFinished = (m) => !!m.endDate && m.endDate < todayIso();
+
+// Date context for the meta line. A medicine with no dates gets nothing:
+// having no dates already means on-going, and tagging every undated row
+// identically would be noise rather than signal.
+function courseText(m) {
+  if (isFinished(m)) return `ended ${fmtDayMonth(m.endDate)}`;
+  return [
+    m.startDate ? `since ${fmtMonthYear(m.startDate)}` : null,
+    m.endDate ? `until ${fmtDayMonth(m.endDate)}` : null,
+  ].filter(Boolean).join(' · ');
+}
 
 // Segmented control: Morning | Noon | Evening, each with its bucket count.
 function TimeSegments({ active, counts, onSelect }) {
@@ -33,32 +57,48 @@ function TimeSegments({ active, counts, onSelect }) {
   );
 }
 
-function MedRow({ med, person, onClick }) {
+// `finished` only quiets the dose chip — the medicine name keeps its full-ink
+// weight either way, since a finished course is still something a carer reads.
+// The end date leads the meta line there, so a long note can't ellipsize away
+// the one fact that section exists to show.
+function MedRow({ med, person, onClick, finished = false }) {
   const food = FOOD_LABEL[med.food];
-  const note = [food, med.note].filter(Boolean).join(' · ');
+  const course = courseText(med);
+  const meta = (finished ? [person.name, course, food, med.note] : [person.name, food, med.note, course])
+    .filter(Boolean).join(' · ');
   return (
     <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 0', cursor: onClick ? 'pointer' : 'default' }}>
       <Avatar person={person} size={38} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 16, fontWeight: 600, color: T.ink }}>{med.name}</span>
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: T.accentSolid, background: T.accentTint, padding: '2px 8px', borderRadius: 999 }}>{med.dose}</span>
+          <span style={{
+            fontSize: 11.5, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+            color: finished ? T.deep : T.accentSolid, background: finished ? T.rowBg : T.accentTint,
+          }}>{med.dose}</span>
         </div>
-        <div style={{ fontSize: 12.5, color: T.metaGrey, marginTop: 3, fontWeight: 500 }}>
-          {person.name}{note ? ` · ${note}` : ''}
+        <div style={{ fontSize: 12.5, color: T.metaGrey, marginTop: 3, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {meta}
         </div>
       </div>
-      {onClick && <Icon name="chevron" size={16} color={T.metaGrey} strokeWidth={2} />}
+      {onClick && <Icon name="chevron" size={16} color={T.metaGrey} strokeWidth={2} style={{ flexShrink: 0 }} />}
     </div>
   );
 }
 
 export function MedicationTab({ data, role, todoBadge, calendarBadge, onTab, onGear, onAdd, onAddPerson, onOpenMed, onSignOut }) {
   const [time, setTime] = React.useState('Morning'); // always Morning on mount — no persistence
+  const [showFinished, setShowFinished] = React.useState(false);
   const peopleById = Object.fromEntries(data.people.map((p) => [p.id, p]));
   const noMeds = data.meds.length === 0;
-  const counts = Object.fromEntries(TIMES.map((t) => [t, data.meds.filter((m) => m.times.includes(t)).length]));
-  const activeMeds = data.meds.filter((m) => m.times.includes(time));
+  // A finished course drops out of the daily lists AND the segment counts — it
+  // isn't a morning or an evening thing any more. It's still a medicine though,
+  // so a family whose meds have all finished sees empty segments plus the
+  // finished section, not the "no medications" empty state.
+  const liveMeds = data.meds.filter((m) => !isFinished(m));
+  const finishedMeds = data.meds.filter(isFinished).sort((a, b) => b.endDate.localeCompare(a.endDate));
+  const counts = Object.fromEntries(TIMES.map((t) => [t, liveMeds.filter((m) => m.times.includes(t)).length]));
+  const activeMeds = liveMeds.filter((m) => m.times.includes(time));
 
   return (
     <div style={{ minHeight: '100%', background: T.gradientBg, paddingBottom: safeArea.bottom(120) }}>
@@ -95,6 +135,34 @@ export function MedicationTab({ data, role, todoBadge, calendarBadge, onTab, onG
               No {time.toLowerCase()} medicines yet.
             </div>
           )}
+          {/* Finished courses sit outside the time segments entirely, as one
+              quiet row that opens in place. Hidden when there are none. */}
+          {finishedMeds.length > 0 && (
+            <div>
+              <button onClick={() => setShowFinished((v) => !v)} aria-expanded={showFinished} style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '13px 14px',
+                borderRadius: 14, background: T.rowBg, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              }}>
+                <Icon name="check" size={17} color={T.deep} strokeWidth={2.2} />
+                <span style={{ flex: 1, textAlign: 'left', fontSize: 14.5, fontWeight: 700, color: T.deep }}>
+                  Finished medicines ({finishedMeds.length})
+                </span>
+                <Icon name="chevron" size={15} color={T.deep} strokeWidth={2}
+                  style={{ transform: showFinished ? 'rotate(90deg)' : 'none', transition: 'transform 160ms ease' }} />
+              </button>
+              {showFinished && (
+                <div style={{ background: T.card, borderRadius: 18, padding: '2px 16px', boxShadow: T.shadowSoft, marginTop: 10 }}>
+                  {finishedMeds.map((m, i) => (
+                    <div key={m.id} style={{ borderBottom: i < finishedMeds.length - 1 ? `1px solid ${T.hairline}` : 'none' }}>
+                      <MedRow med={m} person={peopleById[m.personId]} finished
+                        onClick={role === 'editor' && onOpenMed ? () => onOpenMed(m.id) : undefined} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* trailing note: same treatment as the Contacts tab's footnote */}
           <div style={{ textAlign: 'center', color: T.muted, fontSize: 13, fontWeight: 500, padding: '4px 0 0' }}>
             A reference list — nothing to check off.
