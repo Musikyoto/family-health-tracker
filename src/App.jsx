@@ -14,6 +14,7 @@ import { CalendarForm, MedForm, ContactForm, ReferenceForm } from './screens/For
 import { SettingsHome, PeopleList, PersonForm, DeletePersonDialog, SignOutDialog } from './screens/Settings.jsx';
 import { InviteScreen } from './screens/InviteScreen.jsx';
 import { LoadingScreen } from './components/LoadingScreen.jsx';
+import { useOverlayScrollReset } from './lib/useOverlayScroll.js';
 
 // people, calendar items, and meds all come from Supabase, scoped to the active
 // family, with refetch-on-change. family + role come from the active membership.
@@ -67,6 +68,9 @@ export default function App({ family, role, onSignOut }) {
   const push = (o) => setStack((s) => [...s, o]);
   const pop = () => setStack((s) => s.slice(0, -1));
   const closeAll = () => setStack([]);
+  // Every overlay shares one wrapper inside #root, so the open-at-top /
+  // restore-on-close behaviour is handled once, here, from the stack depth.
+  useOverlayScrollReset(stack.length);
 
   // people mutations — Supabase write, then refetch
   const savePerson = async (rec) => {
